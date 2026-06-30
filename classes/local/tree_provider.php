@@ -62,14 +62,14 @@ class tree_provider {
     private static function nodes(): array {
         return [
             'q_goal' => node::question('q_goal', 'q_goal', [
-                ['labelkey' => 'a_goal_assess', 'target' => 'q_assess'],
-                ['labelkey' => 'a_goal_discuss', 'target' => 'r_forum'],
-                ['labelkey' => 'a_goal_collect', 'target' => 'r_assign'],
+                ['labelkey' => 'a_goal_assess', 'explainkey' => 'a_goal_assess_help', 'target' => 'q_assess'],
+                ['labelkey' => 'a_goal_discuss', 'explainkey' => 'a_goal_discuss_help', 'target' => 'r_forum'],
+                ['labelkey' => 'a_goal_collect', 'explainkey' => 'a_goal_collect_help', 'target' => 'r_assign'],
             ]),
 
             'q_assess' => node::question('q_assess', 'q_assess', [
-                ['labelkey' => 'a_assess_auto', 'target' => 'r_quiz'],
-                ['labelkey' => 'a_assess_open', 'target' => 'r_assign'],
+                ['labelkey' => 'a_assess_auto', 'explainkey' => 'a_assess_auto_help', 'target' => 'r_quiz'],
+                ['labelkey' => 'a_assess_open', 'explainkey' => 'a_assess_open_help', 'target' => 'r_assign'],
             ]),
 
             'r_quiz' => node::result('r_quiz', 'r_quiz_heading', [

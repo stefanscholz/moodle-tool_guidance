@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version details for the Guidance activity chooser tool.
+ * Hook callbacks for tool_guidance.
  *
  * @package    tool_guidance
  * @copyright  2026 bdecent gmbh <https://bdecent.de>
@@ -24,8 +24,12 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'tool_guidance';
-$plugin->version   = 2026063002;
-$plugin->requires  = 2025041400; // Moodle 5.0 or later (targeting 5.2).
-$plugin->maturity  = MATURITY_ALPHA;
-$plugin->release   = '0.1.0';
+$callbacks = [
+    [
+        'hook' => core_course\hook\before_activitychooserbutton_exported::class,
+        'callback' => [
+            tool_guidance\local\callbacks\before_activitychooserbutton_exported_handler::class,
+            'callback',
+        ],
+    ],
+];

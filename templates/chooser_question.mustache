@@ -21,13 +21,18 @@
 
     Context variables required for this template:
     * prompt - The question text.
-    * answers - List of {label, url, target} answers.
+    * answers - List of {label, explanation, url, target} answers.
 
     Example context (json):
     {
         "prompt": "What is your main goal?",
         "answers": [
-            {"label": "Check understanding", "url": "https://example.com/?node=q_assess", "target": "q_assess"}
+            {
+                "label": "Check understanding",
+                "explanation": "See what students already know before you teach.",
+                "url": "https://example.com/?node=q_assess",
+                "target": "q_assess"
+            }
         ]
     }
 }}
@@ -36,8 +41,11 @@
     <ul class="tool-guidance-answers list-unstyled">
         {{#answers}}
             <li class="tool-guidance-answer-item">
-                <a class="btn btn-outline-primary tool-guidance-answer" href="{{url}}" data-target="{{target}}">
-                    {{label}}
+                <a class="card h-100 tool-guidance-answer" href="{{url}}" data-target="{{target}}">
+                    <div class="card-body">
+                        <h4 class="card-title h6 mb-1">{{label}}</h4>
+                        <p class="card-text text-muted small mb-0">{{explanation}}</p>
+                    </div>
                 </a>
             </li>
         {{/answers}}

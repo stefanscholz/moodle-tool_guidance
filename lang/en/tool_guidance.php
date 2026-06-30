@@ -28,6 +28,9 @@ $string['pluginname'] = 'Guidance activity chooser';
 $string['guidance:view'] = 'Use the guidance activity chooser';
 $string['privacy:metadata'] = 'The Guidance activity chooser tool does not store any personal data.';
 
+// Activity chooser ("plus" menu) entry point.
+$string['choosebutton'] = 'Help me choose…';
+
 // Chooser shell.
 $string['choosertitle'] = 'What do you want students to do next?';
 $string['chooserintro'] = 'Answer a few questions and we will suggest an activity, set up for your goal.';
@@ -42,10 +45,15 @@ $string['q_assess'] = 'How do you want to assess their understanding?';
 
 // Answers.
 $string['a_goal_assess'] = 'Check what they understand';
+$string['a_goal_assess_help'] = 'Find out what students already know before you teach something new.';
 $string['a_goal_discuss'] = 'Get them discussing with each other';
+$string['a_goal_discuss_help'] = 'Encourage students to share ideas, ask questions and learn from one another.';
 $string['a_goal_collect'] = 'Collect work they submit';
+$string['a_goal_collect_help'] = 'Gather files or text from students so you can review and grade it.';
 $string['a_assess_auto'] = 'A quick, auto-graded check';
+$string['a_assess_auto_help'] = 'Short questions marked automatically — fast feedback with no manual grading.';
 $string['a_assess_open'] = 'An open-ended written answer';
+$string['a_assess_open_help'] = 'Students write a longer response that you read and grade yourself.';
 
 // Result headings.
 $string['r_quiz_heading'] = 'A quiz is a good fit';

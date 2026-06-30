@@ -58,7 +58,8 @@ class chooser_page implements renderable, templatable {
      * @return array
      */
     public function export_for_template(renderer_base $output): array {
-        $nodeexporter = new node_exporter($this->node, (int) $this->course->id);
+        $context = \context_course::instance($this->course->id);
+        $nodeexporter = new node_exporter($this->node, (int) $this->course->id, $context);
         $starturl = new moodle_url('/admin/tool/guidance/chooser.php', ['courseid' => $this->course->id]);
 
         return [

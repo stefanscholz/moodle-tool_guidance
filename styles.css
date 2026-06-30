@@ -17,7 +17,21 @@
     display: block;
     width: 100%;
     text-align: left;
-    padding: 0.75rem 1rem;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.tool-guidance-answer:hover,
+.tool-guidance-answer:focus {
+    text-decoration: none;
+    color: inherit;
+    border-color: var(--primary, #0f6cbf);
+    box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.1);
+}
+
+.tool-guidance-answer .card-title {
+    color: var(--primary, #0f6cbf);
 }
 
 .tool-guidance-presets {

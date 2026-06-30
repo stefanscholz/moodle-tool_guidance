@@ -18,6 +18,7 @@ namespace tool_guidance\output;
 
 defined('MOODLE_INTERNAL') || die();
 
+use context;
 use core\external\exporter;
 use moodle_url;
 use renderer_base;
@@ -43,11 +44,21 @@ class node_exporter extends exporter {
      *
      * @param node $node The node to export.
      * @param int $courseid Course id.
+     * @param context $context Context used to format the text properties.
      */
-    public function __construct(node $node, int $courseid) {
+    public function __construct(node $node, int $courseid, context $context) {
         $this->node = $node;
         $this->courseid = $courseid;
-        parent::__construct((object) []);
+        parent::__construct((object) [], ['context' => $context]);
+    }
+
+    /**
+     * Related objects required by this exporter.
+     *
+     * @return array
+     */
+    protected static function define_related() {
+        return ['context' => 'context'];
     }
 
     /**
@@ -65,6 +76,7 @@ class node_exporter extends exporter {
                 'multiple' => true,
                 'type' => [
                     'label' => ['type' => PARAM_TEXT],
+                    'explanation' => ['type' => PARAM_TEXT],
                     'url' => ['type' => PARAM_URL],
                     'target' => ['type' => PARAM_ALPHANUMEXT],
                 ],
@@ -104,6 +116,7 @@ class node_exporter extends exporter {
             ]);
             $answers[] = [
                 'label' => get_string($answer['labelkey'], 'tool_guidance'),
+                'explanation' => get_string($answer['explainkey'], 'tool_guidance'),
                 'url' => $url->out(false),
                 'target' => $answer['target'],
             ];

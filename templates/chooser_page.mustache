@@ -1,0 +1,66 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template tool_guidance/chooser_page
+
+    Shell for the guidance decision-tree chooser.
+
+    Context variables required for this template:
+    * title - Page title.
+    * intro - Short introduction sentence.
+    * isstart - Whether the active node is the first node.
+    * starturl - URL of the first node (for "Start over").
+    * startoverlabel - Label for the "Start over" link.
+    * node - The active node context (see tool_guidance/chooser_question and chooser_result).
+
+    Example context (json):
+    {
+        "title": "What do you want students to do next?",
+        "intro": "Answer a few questions and we will suggest an activity.",
+        "isstart": true,
+        "starturl": "https://example.com/chooser.php?courseid=2",
+        "startoverlabel": "Start over",
+        "node": {
+            "isquestion": true,
+            "isresult": false,
+            "prompt": "What is your main goal?",
+            "answers": [
+                {"label": "Check understanding", "url": "https://example.com/?node=q_assess", "target": "q_assess"}
+            ],
+            "presets": []
+        }
+    }
+}}
+<div class="tool-guidance-chooser" data-region="tool-guidance-chooser">
+    <h2 class="tool-guidance-title">{{title}}</h2>
+    <p class="tool-guidance-intro text-muted">{{intro}}</p>
+
+    <div class="tool-guidance-node" data-region="tool-guidance-node" tabindex="-1">
+        {{^isstart}}
+            <p class="tool-guidance-controls">
+                <a href="{{starturl}}" class="tool-guidance-startover" data-action="startover">
+                    {{startoverlabel}}
+                </a>
+            </p>
+        {{/isstart}}
+
+        {{#node}}
+            {{#isquestion}}{{> tool_guidance/chooser_question}}{{/isquestion}}
+            {{#isresult}}{{> tool_guidance/chooser_result}}{{/isresult}}
+        {{/node}}
+    </div>
+</div>

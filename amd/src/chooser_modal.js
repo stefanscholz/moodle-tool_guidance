@@ -28,14 +28,33 @@
 
 import Modal from 'core/modal';
 import {getString} from 'core/str';
+import Dropdown from 'theme_boost/bootstrap/dropdown';
 
 const SELECTORS = {
     TRIGGER: '[data-action="guidance-chooser"]',
     REGION: '[data-region="tool-guidance-node"]',
     STEP: '.tool-guidance-answer, [data-action="startover"]',
+    DROPDOWN_TOGGLE: '[data-bs-toggle="dropdown"]',
 };
 
 let initialised = false;
+
+/**
+ * Close the Bootstrap dropdown the trigger lives in (if any).
+ *
+ * The activity chooser button is a dropdown; left open, its stacking context
+ * sits above the modal backdrop and bleeds through on top of the modal.
+ *
+ * @param {Element} trigger The clicked trigger element.
+ */
+const closeDropdown = (trigger) => {
+    const dropdown = trigger.closest('.dropdown');
+    const toggle = dropdown && dropdown.querySelector(SELECTORS.DROPDOWN_TOGGLE);
+    if (toggle) {
+        Dropdown.getOrCreateInstance(toggle).hide();
+    }
+    trigger.blur();
+};
 
 /**
  * Fetch a chooser URL and return its node region element.
@@ -67,12 +86,18 @@ const openModal = async(url) => {
         if (body) {
             body.classList.add('tool-guidance-loading');
         }
-        const fresh = await fetchRegion(target);
-        if (!fresh) {
-            window.location.href = target;
-            return;
+        try {
+            const fresh = await fetchRegion(target);
+            if (!fresh) {
+                window.location.href = target;
+                return;
+            }
+            modal.setBody(fresh.outerHTML);
+        } finally {
+            if (body) {
+                body.classList.remove('tool-guidance-loading');
+            }
         }
-        modal.setBodyContent(fresh.outerHTML);
     };
 
     // Step through the tree in place: each answer/start-over link reloads the modal body.
@@ -100,6 +125,7 @@ export const init = () => {
             return;
         }
         e.preventDefault();
+        closeDropdown(trigger);
         openModal(trigger.href);
     });
 };

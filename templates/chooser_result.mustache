@@ -40,6 +40,7 @@
 }}
 <div class="tool-guidance-result">
     <h3 class="tool-guidance-prompt">{{prompt}}</h3>
+    <p class="tool-guidance-presets-label text-muted">{{#str}}suggestedpresets, tool_guidance{{/str}}</p>
     <div class="tool-guidance-presets">
         {{#presets}}
             <div class="card tool-guidance-preset">
@@ -49,14 +50,19 @@
                         <h4 class="tool-guidance-preset-title">{{title}}</h4>
                     </div>
                     <p class="tool-guidance-preset-desc">{{description}}</p>
-                    <dl class="tool-guidance-preset-config">
-                        {{#config}}
-                            <div class="tool-guidance-config-row">
-                                <dt>{{name}}</dt>
-                                <dd>{{value}}</dd>
-                            </div>
-                        {{/config}}
-                    </dl>
+                    {{#config.0}}
+                        <details class="tool-guidance-preset-configdetails">
+                            <summary>{{#str}}showconfig, tool_guidance{{/str}}</summary>
+                            <dl class="tool-guidance-preset-config">
+                                {{#config}}
+                                    <div class="tool-guidance-config-row">
+                                        <dt>{{name}}</dt>
+                                        <dd>{{value}}</dd>
+                                    </div>
+                                {{/config}}
+                            </dl>
+                        </details>
+                    {{/config.0}}
                     <a href="{{useurl}}" class="btn btn-primary tool-guidance-usepreset" data-action="usepreset">
                         {{#str}}usepreset, tool_guidance{{/str}}
                     </a>

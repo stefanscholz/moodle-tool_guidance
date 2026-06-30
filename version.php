@@ -25,7 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'tool_guidance';
-$plugin->version   = 2026063002;
+$plugin->version   = 2026063007;
 $plugin->requires  = 2025041400; // Moodle 5.0 or later (targeting 5.2).
 $plugin->maturity  = MATURITY_ALPHA;
 $plugin->release   = '0.1.0';

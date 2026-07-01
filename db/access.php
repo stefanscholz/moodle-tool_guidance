@@ -15,16 +15,28 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Capability definitions for the Guidance tool.
+ * Capability definitions for tool_guidance.
  *
  * @package    tool_guidance
- * @copyright  2026 bdecent gmbh <https://bdecent.de>
+ * @copyright  2026 Lily Asshauer, bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 $capabilities = [
+
+    // Create and edit guidance graphs, nodes and links in the admin panel.
+    'tool/guidance:manage' => [
+        'riskbitmask' => RISK_SPAM | RISK_XSS,
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+            'manager' => CAP_ALLOW,
+        ],
+    ],
+
+    // Use the guidance activity chooser within a course.
     'tool/guidance:view' => [
         'captype' => 'read',
         'contextlevel' => CONTEXT_COURSE,

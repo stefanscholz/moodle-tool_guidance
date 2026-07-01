@@ -15,20 +15,22 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Admin settings registration for the Guidance tool.
+ * Admin settings: registers the guidance graph management page and addon settings.
  *
  * @package    tool_guidance
- * @copyright  2026 bdecent gmbh <https://bdecent.de>
+ * @copyright  2026 Lily Asshauer, bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 if ($hassiteconfig) {
-    // Register the plugin under Site administration > Plugins > Admin tools.
-    // No settings yet in the static prototype.
-    $settings = new admin_settingpage('tool_guidance', get_string('pluginname', 'tool_guidance'));
-    $ADMIN->add('tools', $settings);
+    $ADMIN->add('tools', new admin_externalpage(
+        'tool_guidance_managegraphs',
+        get_string('managegraphs', 'tool_guidance'),
+        new moodle_url('/admin/tool/guidance/index.php'),
+        'tool/guidance:manage'
+    ));
 
     // Load settings pages for guidance addons (subplugins). Core only auto-loads
     // settings for a fixed set of plugin types, so the parent tool must load its

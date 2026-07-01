@@ -15,17 +15,17 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version details for the Guidance activity chooser tool.
+ * Plugin version and metadata for tool_guidance.
  *
  * @package    tool_guidance
- * @copyright  2026 bdecent gmbh <https://bdecent.de>
+ * @copyright  2026 Lily Asshauer, bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'tool_guidance';
-$plugin->version   = 2026070100;
+$plugin->version   = 2026070101;
 $plugin->requires  = 2025041400; // Moodle 5.0 or later (targeting 5.2).
 $plugin->maturity  = MATURITY_ALPHA;
 $plugin->release   = '0.1.0';

@@ -1,0 +1,232 @@
+/* Guidance graph editor. */
+
+.tool-guidance-editor {
+    position: relative;
+    overflow: hidden;
+    height: 75vh;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    background: #f6f7f9;
+    background-image: radial-gradient(#dfe3e8 1px, transparent 1px);
+    background-size: 24px 24px;
+    cursor: grab;
+}
+
+.tool-guidance-editor:active {
+    cursor: grabbing;
+}
+
+.tool-guidance-surface {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 5000px;
+    height: 4000px;
+    transform-origin: 0 0;
+}
+
+.tool-guidance-edges {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+}
+
+.tg-edge {
+    fill: none;
+    stroke: #6c7a89;
+    stroke-width: 2;
+}
+
+.tg-edge-temp {
+    stroke-dasharray: 5 4;
+    stroke: #2a4d69;
+}
+
+.tool-guidance-nodes {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.tg-node {
+    position: absolute;
+    width: 240px;
+    background: #fff;
+    border: 1px solid #adb5bd;
+    border-radius: 6px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+    font-size: 0.85rem;
+}
+
+.tg-node-question {
+    border-top: 4px solid #2a4d69;
+}
+
+.tg-node-leaf {
+    border-top: 4px solid #6f5499;
+}
+
+.tg-node-entry {
+    box-shadow: 0 0 0 2px #2e8b57, 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+.tg-node-input {
+    position: absolute;
+    top: -7px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #6c7a89;
+    border: 2px solid #fff;
+}
+
+.tg-node-outport {
+    position: absolute;
+    bottom: -7px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #2a4d69;
+    border: 2px solid #fff;
+    cursor: crosshair;
+}
+
+.tg-node-header {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    cursor: move;
+    background: #eef1f4;
+    border-radius: 6px 6px 0 0;
+}
+
+.tg-node-type {
+    font-weight: bold;
+    flex: 1 1 auto;
+}
+
+.tg-node-entry-badge {
+    display: none;
+    color: #2e8b57;
+}
+
+.tg-node-entry .tg-node-entry-badge {
+    display: inline;
+}
+
+.tg-node-header button {
+    padding: 0 0.25rem;
+    line-height: 1;
+}
+
+.tg-node-body {
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.tg-answer-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.tg-answer-node {
+    position: absolute;
+    width: 150px;
+    display: flex;
+    align-items: center;
+    gap: 0.1rem;
+    padding: 2px 4px;
+    background: #fdf6e3;
+    border: 1px solid #c9a227;
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    cursor: move;
+    font-size: 0.8rem;
+}
+
+.tg-answer-input {
+    position: absolute;
+    top: -7px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #c9a227;
+    border: 2px solid #fff;
+}
+
+.tg-answer-outport {
+    position: absolute;
+    bottom: -7px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #c9a227;
+    border: 2px solid #fff;
+    cursor: crosshair;
+}
+
+.tg-answer-label {
+    flex: 1 1 auto;
+    height: auto;
+    padding: 0.1rem 0.35rem;
+    font-size: 0.78rem;
+    background: transparent;
+    border: none;
+}
+
+.tg-answer-label:focus {
+    background: #fff;
+}
+
+.tg-answer-remove {
+    flex: 0 0 auto;
+    padding: 0 0.2rem;
+    line-height: 1;
+}
+
+.tg-create-popup {
+    position: absolute;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.4rem;
+    background: #fff;
+    border: 1px solid #adb5bd;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.tg-create-popup-heading {
+    font-size: 0.75rem;
+    color: #6c757d;
+}
+
+.tg-field {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.78rem;
+    gap: 0.15rem;
+}
+
+.tg-check {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.35rem;
+}

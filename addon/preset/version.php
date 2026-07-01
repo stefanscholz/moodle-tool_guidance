@@ -26,7 +26,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'guidanceaddon_preset';
 $plugin->version   = 2026070101;
-$plugin->requires  = 2025041400; // Moodle 5.0 or later (targeting 5.2).
+$plugin->requires  = 2024100700; // Moodle 4.5 or later (targeting 5.2).
 $plugin->maturity  = MATURITY_ALPHA;
 $plugin->release   = '0.1.0';
 $plugin->dependencies = [

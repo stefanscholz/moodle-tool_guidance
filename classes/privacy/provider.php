@@ -16,25 +16,144 @@
 
 namespace tool_guidance\privacy;
 
-defined('MOODLE_INTERNAL') || die();
+use core_privacy\local\metadata\collection;
+use core_privacy\local\request\approved_contextlist;
+use core_privacy\local\request\approved_userlist;
+use core_privacy\local\request\contextlist;
+use core_privacy\local\request\userlist;
+use core_privacy\local\request\writer;
+use context;
+use context_course;
 
 /**
- * Privacy provider for the Guidance tool.
- *
- * The tool stores no personal data.
+ * Privacy provider: the plugin stores which user dismissed which suggestion in a course.
  *
  * @package    tool_guidance
  * @copyright  2026 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class provider implements \core_privacy\local\metadata\null_provider {
+class provider implements
+    \core_privacy\local\metadata\provider,
+    \core_privacy\local\request\core_userlist_provider,
+    \core_privacy\local\request\plugin\provider {
+
+    /** @var string The dismissal table. */
+    const TABLE = 'tool_guidance_dismissed';
 
     /**
-     * Reason why this plugin stores no personal data.
+     * Describe the stored personal data.
      *
-     * @return string
+     * @param collection $collection
+     * @return collection
      */
-    public static function get_reason(): string {
-        return 'privacy:metadata';
+    public static function get_metadata(collection $collection): collection {
+        $collection->add_database_table(self::TABLE, [
+            'courseid'    => 'privacy:metadata:dismissed:courseid',
+            'ruleid'      => 'privacy:metadata:dismissed:ruleid',
+            'userid'      => 'privacy:metadata:dismissed:userid',
+            'timecreated' => 'privacy:metadata:dismissed:timecreated',
+        ], 'privacy:metadata:dismissed');
+        return $collection;
+    }
+
+    /**
+     * Course contexts in which the user has dismissed a suggestion.
+     *
+     * @param int $userid
+     * @return contextlist
+     */
+    public static function get_contexts_for_userid(int $userid): contextlist {
+        $contextlist = new contextlist();
+        $sql = "SELECT ctx.id
+                  FROM {" . self::TABLE . "} d
+                  JOIN {context} ctx ON ctx.instanceid = d.courseid AND ctx.contextlevel = :courselevel
+                 WHERE d.userid = :userid";
+        $contextlist->add_from_sql($sql, ['courselevel' => CONTEXT_COURSE, 'userid' => $userid]);
+        return $contextlist;
+    }
+
+    /**
+     * Users who have dismissals in the given (course) context.
+     *
+     * @param userlist $userlist
+     */
+    public static function get_users_in_context(userlist $userlist): void {
+        $context = $userlist->get_context();
+        if (!$context instanceof context_course) {
+            return;
+        }
+        $userlist->add_from_sql('userid', "SELECT userid FROM {" . self::TABLE . "} WHERE courseid = :courseid",
+            ['courseid' => $context->instanceid]);
+    }
+
+    /**
+     * Export the user's dismissals per course context.
+     *
+     * @param approved_contextlist $contextlist
+     */
+    public static function export_user_data(approved_contextlist $contextlist): void {
+        global $DB;
+        $userid = $contextlist->get_user()->id;
+        foreach ($contextlist->get_contexts() as $context) {
+            if (!$context instanceof context_course) {
+                continue;
+            }
+            $records = $DB->get_records(self::TABLE, ['courseid' => $context->instanceid, 'userid' => $userid]);
+            if (!$records) {
+                continue;
+            }
+            $data = array_map(static function($r) {
+                return [
+                    'ruleid'      => $r->ruleid,
+                    'timecreated' => \core_privacy\local\request\transform::datetime($r->timecreated),
+                ];
+            }, array_values($records));
+            writer::with_context($context)->export_data(
+                [get_string('pluginname', 'tool_guidance')],
+                (object) ['dismissals' => $data]);
+        }
+    }
+
+    /**
+     * Delete all dismissals in a context.
+     *
+     * @param context $context
+     */
+    public static function delete_data_for_all_users_in_context(context $context): void {
+        global $DB;
+        if ($context instanceof context_course) {
+            $DB->delete_records(self::TABLE, ['courseid' => $context->instanceid]);
+        }
+    }
+
+    /**
+     * Delete a user's dismissals in the approved contexts.
+     *
+     * @param approved_contextlist $contextlist
+     */
+    public static function delete_data_for_user(approved_contextlist $contextlist): void {
+        global $DB;
+        $userid = $contextlist->get_user()->id;
+        foreach ($contextlist->get_contexts() as $context) {
+            if ($context instanceof context_course) {
+                $DB->delete_records(self::TABLE, ['courseid' => $context->instanceid, 'userid' => $userid]);
+            }
+        }
+    }
+
+    /**
+     * Delete the listed users' dismissals in a context.
+     *
+     * @param approved_userlist $userlist
+     */
+    public static function delete_data_for_users(approved_userlist $userlist): void {
+        global $DB;
+        $context = $userlist->get_context();
+        if (!$context instanceof context_course) {
+            return;
+        }
+        [$insql, $params] = $DB->get_in_or_equal($userlist->get_userids(), SQL_PARAMS_NAMED);
+        $params['courseid'] = $context->instanceid;
+        $DB->delete_records_select(self::TABLE, "courseid = :courseid AND userid $insql", $params);
     }
 }

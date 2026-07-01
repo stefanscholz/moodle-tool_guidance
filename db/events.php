@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Capability definitions for the Guidance tool.
+ * Event observers: invalidate the cached suggestion when a course changes.
  *
  * @package    tool_guidance
  * @copyright  2026 bdecent gmbh <https://bdecent.de>
@@ -24,25 +24,17 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$capabilities = [
-    // Use the guidance activity chooser in a course.
-    'tool/guidance:view' => [
-        'captype' => 'read',
-        'contextlevel' => CONTEXT_COURSE,
-        'archetypes' => [
-            'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW,
-        ],
-        'clonepermissionsfrom' => 'moodle/course:manageactivities',
+$observers = [
+    [
+        'eventname' => '\core\event\course_module_created',
+        'callback'  => '\tool_guidance\observer::course_changed',
     ],
-
-    // Manage the global suggestion rule table (site administrators).
-    'tool/guidance:managerules' => [
-        'riskbitmask' => RISK_CONFIG,
-        'captype' => 'write',
-        'contextlevel' => CONTEXT_SYSTEM,
-        'archetypes' => [
-            'manager' => CAP_ALLOW,
-        ],
+    [
+        'eventname' => '\core\event\course_module_updated',
+        'callback'  => '\tool_guidance\observer::course_changed',
+    ],
+    [
+        'eventname' => '\core\event\course_module_deleted',
+        'callback'  => '\tool_guidance\observer::course_changed',
     ],
 ];

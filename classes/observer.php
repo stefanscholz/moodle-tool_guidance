@@ -14,35 +14,28 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace tool_guidance;
+
+use core\event\base;
+use tool_guidance\local\engine;
+
 /**
- * Capability definitions for the Guidance tool.
+ * Event observers that keep the cached suggestion fresh.
  *
  * @package    tool_guidance
  * @copyright  2026 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+class observer {
 
-defined('MOODLE_INTERNAL') || die();
-
-$capabilities = [
-    // Use the guidance activity chooser in a course.
-    'tool/guidance:view' => [
-        'captype' => 'read',
-        'contextlevel' => CONTEXT_COURSE,
-        'archetypes' => [
-            'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW,
-        ],
-        'clonepermissionsfrom' => 'moodle/course:manageactivities',
-    ],
-
-    // Manage the global suggestion rule table (site administrators).
-    'tool/guidance:managerules' => [
-        'riskbitmask' => RISK_CONFIG,
-        'captype' => 'write',
-        'contextlevel' => CONTEXT_SYSTEM,
-        'archetypes' => [
-            'manager' => CAP_ALLOW,
-        ],
-    ],
-];
+    /**
+     * Invalidate the cached suggestion when a course's activities change.
+     *
+     * @param base $event
+     */
+    public static function course_changed(base $event): void {
+        if (!empty($event->courseid)) {
+            engine::purge_course((int) $event->courseid);
+        }
+    }
+}

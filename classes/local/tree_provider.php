@@ -59,6 +59,41 @@ class tree_provider {
      *
      * @return node[]
      */
+    /**
+     * Return the result node whose presets match the given activity module, or a
+     * synthesised generic result when no bespoke template exists yet.
+     *
+     * This is the deep-link target used by the suggestion block's call-to-action.
+     *
+     * @param string $modname Activity module name (e.g. 'quiz').
+     * @return node
+     */
+    public static function result_for_modname(string $modname): node {
+        foreach (self::nodes() as $node) {
+            if (!$node->is_result()) {
+                continue;
+            }
+            foreach ($node->get_presets() as $preset) {
+                if ($preset->get_modname() === $modname) {
+                    return $node;
+                }
+            }
+        }
+        return self::generic_result($modname);
+    }
+
+    /**
+     * Build a minimal single-preset result for an activity that has no template yet.
+     *
+     * @param string $modname Activity module name.
+     * @return node
+     */
+    private static function generic_result(string $modname): node {
+        return node::result('r_generic', 'r_generic_heading', [
+            preset::make($modname, 'p_generic_title', 'p_generic_desc', []),
+        ]);
+    }
+
     private static function nodes(): array {
         return [
             'q_goal' => node::question('q_goal', 'q_goal', [

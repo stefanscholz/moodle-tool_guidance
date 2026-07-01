@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Strings for the Guidance activity chooser tool.
+ * Strings for the Guidance activity chooser tool (chooser + suggestion engine).
  *
  * @package    tool_guidance
  * @copyright  2026 bdecent gmbh <https://bdecent.de>
@@ -26,7 +26,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $string['pluginname'] = 'Guidance activity chooser';
 $string['guidance:view'] = 'Use the guidance activity chooser';
-$string['privacy:metadata'] = 'The Guidance activity chooser tool does not store any personal data.';
+$string['guidance:managerules'] = 'Manage activity suggestion rules';
 
 // Activity chooser ("plus" menu) entry point.
 $string['choosebutton'] = 'Help me choose…';
@@ -79,6 +79,11 @@ $string['p_forum2_desc'] = 'Students must post their own answer before they can 
 $string['p_forum3_title'] = 'Introduction';
 $string['p_forum3_desc'] = 'A forum that asks each student to post a short introduction about themselves to get the group acquainted.';
 
+// Generic preset shown when a suggested activity has no bespoke template yet.
+$string['p_generic_title'] = 'Add {$a}';
+$string['p_generic_desc'] = 'Create this activity with sensible defaults. A tailored template will follow.';
+$string['r_generic_heading'] = '{$a} is a good next step';
+
 // Preset configuration labels.
 $string['cfg_questions'] = 'Number of questions';
 $string['cfg_attempts'] = 'Attempts allowed';
@@ -115,3 +120,60 @@ $string['cfgv_forum2_grading'] = 'Whole forum grading';
 $string['cfgv_forum3_type'] = 'Each person posts one discussion';
 $string['cfgv_forum3_sub'] = 'Forced';
 $string['cfgv_forum3_grading'] = 'None';
+
+// ---------------------------------------------------------------------------
+// Suggestion engine (drives the block's automatic recommendation).
+// ---------------------------------------------------------------------------
+
+// Settings.
+$string['settings'] = 'Settings';
+$string['enableai'] = 'Use AI to re-rank suggestions';
+$string['enableai_desc'] = 'When a Moodle AI provider is configured, allow it to reorder the matched suggestions to pick the most relevant one. The deterministic rule order is always used as a fallback. Suggestions work fully without AI.';
+$string['cooldowndays'] = 'Dismissal cooldown (days)';
+$string['cooldowndays_desc'] = 'How long a skipped suggestion stays hidden for the whole course before it can be suggested again.';
+$string['enableengagementfacts'] = 'Compute engagement facts';
+$string['enableengagementfacts_desc'] = 'Compute the costlier engagement facts (recent activity, completion rate, forum posts, quiz attempts, submission rate). These power the engagement-signal rules but add log and database queries.';
+
+// Rule management.
+$string['managerules'] = 'Manage rules';
+$string['managerules_desc'] = 'Rules are evaluated top to bottom. The first rule that matches the course, whose activity is installed and not currently dismissed, becomes the suggestion shown.';
+$string['addrule'] = 'Add rule';
+$string['editrule'] = 'Edit rule';
+$string['deleterule'] = 'Delete rule';
+$string['confirmdelete'] = 'Are you sure you want to delete the rule "{$a}"?';
+$string['ruledeleted'] = 'Rule deleted';
+$string['rulesaved'] = 'Rule saved';
+$string['norules'] = 'There are no suggestion rules yet.';
+$string['moveup'] = 'Move up';
+$string['movedown'] = 'Move down';
+$string['enable'] = 'Enable';
+$string['disable'] = 'Disable';
+
+// Rule fields.
+$string['rule_name'] = 'Name';
+$string['rule_signal'] = 'Signal';
+$string['rule_condition'] = 'Condition';
+$string['rule_condition_help'] = 'A condition expression. Clauses are joined with AND, for example: <code>has_purpose_content == true AND has_purpose_assessment == false AND term_stage in (week1|early|mid)</code>. Operators: == != &lt; &lt;= &gt; &gt;= in. An operand may be a number, true/false, an enum word, another fact name, or a set like (a|b|c) for "in".';
+$string['rule_suggest'] = 'Suggested activity';
+$string['rule_rationale'] = 'Rationale (shown to the teacher)';
+$string['rule_preconfig'] = 'Pre-configuration';
+$string['rule_preconfig_help'] = 'Optional key=value pairs separated by semicolons, passed to the add-activity flow, for example: <code>type=qanda;name=Questions and answers</code>. A "name" key provides the default activity name.';
+$string['rule_enabled'] = 'Enabled';
+$string['rule_sortorder'] = 'Order';
+$string['conditioninvalid'] = 'The condition could not be parsed near: {$a}';
+$string['availablefacts'] = 'Available facts';
+
+// Signals.
+$string['signal_gap'] = 'Pedagogical gap';
+$string['signal_lifecycle'] = 'Lifecycle/timing';
+$string['signal_engagement'] = 'Engagement/health';
+
+// Cache.
+$string['cachedef_suggestions'] = 'Computed activity suggestion per course';
+
+// Privacy.
+$string['privacy:metadata:dismissed'] = 'Records of which suggestion a user dismissed in a course.';
+$string['privacy:metadata:dismissed:courseid'] = 'The course the suggestion was dismissed in.';
+$string['privacy:metadata:dismissed:ruleid'] = 'The suggestion rule that was dismissed.';
+$string['privacy:metadata:dismissed:userid'] = 'The user who dismissed the suggestion.';
+$string['privacy:metadata:dismissed:timecreated'] = 'When the suggestion was dismissed.';

@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Capability definitions for the Guidance tool.
+ * Cache definitions for the activity suggestion engine.
  *
  * @package    tool_guidance
  * @copyright  2026 bdecent gmbh <https://bdecent.de>
@@ -24,25 +24,14 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$capabilities = [
-    // Use the guidance activity chooser in a course.
-    'tool/guidance:view' => [
-        'captype' => 'read',
-        'contextlevel' => CONTEXT_COURSE,
-        'archetypes' => [
-            'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW,
-        ],
-        'clonepermissionsfrom' => 'moodle/course:manageactivities',
-    ],
-
-    // Manage the global suggestion rule table (site administrators).
-    'tool/guidance:managerules' => [
-        'riskbitmask' => RISK_CONFIG,
-        'captype' => 'write',
-        'contextlevel' => CONTEXT_SYSTEM,
-        'archetypes' => [
-            'manager' => CAP_ALLOW,
-        ],
+$definitions = [
+    // The computed top suggestion per course. Course-wide (identical for all teachers),
+    // so keyed simply by course id. Purged on course module changes and dismissals.
+    'suggestions' => [
+        'mode'          => cache_store::MODE_APPLICATION,
+        'simplekeys'    => true,
+        'simpledata'    => false,
+        'staticacceleration' => true,
+        'ttl'           => 3600,
     ],
 ];

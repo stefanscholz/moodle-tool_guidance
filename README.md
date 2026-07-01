@@ -1,44 +1,35 @@
-# tool_guidance — Guidance activity chooser
+# tool_guidance — Guidance activity chooser + suggestion engine
 
-Static front-end prototype: a question-and-answer **decision tree** that helps
-teachers decide what to do in a new, empty Moodle course by suggesting activity
-presets with sample configuration.
+The "brain" of the **Guidance** project. Two things live here:
 
-> **Status: static interface only.** The decision tree, presets and the
-> recommendation are hardcoded placeholders. The real decision logic and
-> content backend are built by a separate team and will be wired in later.
-> Target: **Moodle 5.2** (PHP 8.2+).
+1. **A deterministic suggestion engine.** It builds a *profile* of a course (structure,
+   pedagogical purposes, lifecycle stage, optional engagement facts) and evaluates an
+   ordered, admin-editable **rule table** (100 seeded rules) to pick the single most
+   relevant next activity. First matching rule (by precedence) whose activity is installed
+   and not dismissed wins. Course-wide dismissal with a cooldown; optional AI *re-ranking*
+   of the matched candidates (works fully without AI). This engine backs the companion
+   [`block_guidance`](../../../blocks/guidance) next-step block.
 
-The chooser lives at
-`admin/tool/guidance/chooser.php?courseid=<id>&node=<nodeid>`. The teacher
-answers a few questions and is shown suggested activity presets. The tree comes
-from the static `tool_guidance\local\tree_provider` class — the swap-point for
-the future content backend.
+2. **A guided activity chooser.** A question-and-answer decision tree
+   (`admin/tool/guidance/chooser.php`) that suggests activity **presets** with sample
+   configuration, and hooks a "Help me choose…" entry into the activity-chooser ("+") menu.
 
-The chooser is **server-rendered** (each answer is a normal link with the node
-id in the URL) with an AMD module (`tool_guidance/chooser`) layering no-reload
-stepping on top. It works fully without JavaScript.
+## Deep-linking
 
-It pairs with the companion [`block_guidance`](https://github.com/stefanscholz/moodle-block_guidance)
-next-step block, whose call-to-action deep-links into this chooser.
+`chooser.php?courseid=<id>&modname=<mod>` lands directly on the presets for a given
+activity — this is the target the block's "Set this up" call-to-action uses. Activities
+with bespoke presets (quiz/assign/forum) show them; others get a synthesised generic
+landing until a template is authored.
 
-## Installation
+## Managing rules
 
-Clone (or copy) this repository into `admin/tool/guidance` inside your Moodle:
+**Site administration → Plugins → Admin tools → Guidance activity chooser → Manage rules.**
+Rules are ordered by precedence and edited without code (condition DSL, suggested activity,
+rationale, pre-config). Settings there also control AI re-ranking, the dismissal cooldown,
+and whether the costlier engagement facts are computed.
 
-```sh
-# From your Moodle root:
-git clone git@github.com:stefanscholz/moodle-tool_guidance.git admin/tool/guidance
-```
+## Still a placeholder
 
-Then visit **Site administration → Notifications** to install the plugin.
-
-## Wiring up the backend later
-
-- Replace `tool_guidance\local\tree_provider` (return real `node`/`preset`
-  objects, e.g. behind a `tree_source` interface).
-- Implement real activity creation behind the result-card "Use this template"
-  action (currently a placeholder that returns to the course).
-
-Everything else — exporters, renderables, templates, AMD — depends only on the
-`node` and `preset` shapes, so it stays unchanged.
+Creating an activity from a preset ("Use this template") returns to the course for now —
+real instance creation is the next piece of work. The interactive Q&A tree
+(`local\tree_provider`) is still static; the automatic block suggestion is engine-driven.

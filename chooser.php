@@ -29,6 +29,7 @@ use tool_guidance\output\chooser_page;
 
 $courseid = required_param('courseid', PARAM_INT);
 $nodeid = optional_param('node', null, PARAM_ALPHANUMEXT);
+$modname = optional_param('modname', null, PARAM_PLUGIN);
 
 $course = get_course($courseid);
 require_login($course);
@@ -36,16 +37,20 @@ require_login($course);
 $context = context_course::instance($course->id);
 require_capability('tool/guidance:view', $context);
 
-// Resolve the requested node; fall back to the start of the tree.
-$node = $nodeid ? tree_provider::get_node($nodeid) : null;
-if ($node === null) {
-    $node = tree_provider::get_start();
+// A modname deep-link (from the suggestion block) lands directly on the presets
+// for that activity; otherwise resolve the requested tree node or fall back to start.
+if ($modname) {
+    $node = tree_provider::result_for_modname($modname);
+    $pageurlparams = ['courseid' => $course->id, 'modname' => $modname];
+} else {
+    $node = $nodeid ? tree_provider::get_node($nodeid) : null;
+    if ($node === null) {
+        $node = tree_provider::get_start();
+    }
+    $pageurlparams = ['courseid' => $course->id, 'node' => $node->get_id()];
 }
 
-$pageurl = new moodle_url('/admin/tool/guidance/chooser.php', [
-    'courseid' => $course->id,
-    'node' => $node->get_id(),
-]);
+$pageurl = new moodle_url('/admin/tool/guidance/chooser.php', $pageurlparams);
 
 $PAGE->set_url($pageurl);
 $PAGE->set_context($context);

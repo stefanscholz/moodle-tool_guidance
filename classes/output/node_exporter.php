@@ -131,23 +131,30 @@ class node_exporter extends exporter {
                     'value' => get_string($row['value'], 'tool_guidance'),
                 ];
             }
+            $modnamedisplay = get_string('pluginname', 'mod_' . $preset->get_modname());
             // Placeholder CTA: returns to the course. Real instance creation comes with the backend.
             $useurl = new moodle_url('/course/view.php', ['id' => $this->courseid]);
             $presets[] = [
                 'modname' => $preset->get_modname(),
                 'iconurl' => $output->image_url('monologo', 'mod_' . $preset->get_modname())->out(false),
-                'title' => get_string($preset->get_titlekey(), 'tool_guidance'),
-                'description' => get_string($preset->get_desckey(), 'tool_guidance'),
+                'title' => get_string($preset->get_titlekey(), 'tool_guidance', $modnamedisplay),
+                'description' => get_string($preset->get_desckey(), 'tool_guidance', $modnamedisplay),
                 'useurl' => $useurl->out(false),
                 'config' => $config,
             ];
         }
 
+        // The generic result heading takes the activity display name as its {$a}.
+        $presetlist = $this->node->get_presets();
+        $headinga = $presetlist
+            ? get_string('pluginname', 'mod_' . reset($presetlist)->get_modname())
+            : null;
+
         return [
             'id' => $this->node->get_id(),
             'isquestion' => $this->node->is_question(),
             'isresult' => $this->node->is_result(),
-            'prompt' => get_string($this->node->get_textkey(), 'tool_guidance'),
+            'prompt' => get_string($this->node->get_textkey(), 'tool_guidance', $headinga),
             'answers' => $answers,
             'presets' => $presets,
         ];

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Bundled demo activity presets.
+
+    Each <preset> is seeded on install by preset_manager::create_default_presets().
+    The <shortname> MUST match the short names referenced by tool_guidance's
+    decision tree (see tool_guidance\local\tree_provider). The <backupfile> must
+    name a single-activity .mbz backup shipped alongside this file in this
+    directory. Presets whose backup file is missing are skipped during seeding,
+    so the chooser simply falls back to its display-only placeholder for them.
+-->
+<presets>
+    <preset>
+        <shortname>quiz_diagnostic</shortname>
+        <title>Diagnostic quiz</title>
+        <description>A short, auto-graded quiz to check what students already know.</description>
+        <modname>quiz</modname>
+        <backupfile>quiz_diagnostic.mbz</backupfile>
+        <status>1</status>
+        <sortorder>1</sortorder>
+    </preset>
+    <preset>
+        <shortname>quiz_practice</shortname>
+        <title>Practice quiz</title>
+        <description>A low-stakes quiz students can retake as often as they like to practise.</description>
+        <modname>quiz</modname>
+        <backupfile>quiz_practice.mbz</backupfile>
+        <status>1</status>
+        <sortorder>2</sortorder>
+    </preset>
+    <preset>
+        <shortname>quiz_graded</shortname>
+        <title>Graded test</title>
+        <description>A single-attempt test that counts towards the final grade.</description>
+        <modname>quiz</modname>
+        <backupfile>quiz_graded.mbz</backupfile>
+        <status>1</status>
+        <sortorder>3</sortorder>
+    </preset>
+    <preset>
+        <shortname>assign_reflection</shortname>
+        <title>Written reflection</title>
+        <description>An assignment where students submit an open-ended written response.</description>
+        <modname>assign</modname>
+        <backupfile>assign_reflection.mbz</backupfile>
+        <status>1</status>
+        <sortorder>4</sortorder>
+    </preset>
+    <preset>
+        <shortname>assign_fileupload</shortname>
+        <title>File submission</title>
+        <description>An assignment where students upload one or more files for grading.</description>
+        <modname>assign</modname>
+        <backupfile>assign_fileupload.mbz</backupfile>
+        <status>1</status>
+        <sortorder>5</sortorder>
+    </preset>
+    <preset>
+        <shortname>forum_discussion</shortname>
+        <title>Discussion forum</title>
+        <description>A standard forum to spark discussion between students.</description>
+        <modname>forum</modname>
+        <backupfile>forum_discussion.mbz</backupfile>
+        <status>1</status>
+        <sortorder>6</sortorder>
+    </preset>
+    <preset>
+        <shortname>forum_qanda</shortname>
+        <title>Q&amp;A forum</title>
+        <description>Students must post their own answer before they can see their classmates' replies.</description>
+        <modname>forum</modname>
+        <backupfile>forum_qanda.mbz</backupfile>
+        <status>1</status>
+        <sortorder>7</sortorder>
+    </preset>
+    <preset>
+        <shortname>forum_intro</shortname>
+        <title>Introduction</title>
+        <description>A forum that asks each student to post a short introduction about themselves.</description>
+        <modname>forum</modname>
+        <backupfile>forum_intro.mbz</backupfile>
+        <status>1</status>
+        <sortorder>8</sortorder>
+    </preset>
+</presets>

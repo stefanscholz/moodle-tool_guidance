@@ -40,15 +40,20 @@ class chooser_page implements renderable, templatable {
     /** @var node The active node. */
     protected $node;
 
+    /** @var int Section number the chooser was launched from. */
+    protected $sectionnum;
+
     /**
      * Constructor.
      *
      * @param \stdClass $course Course record.
      * @param node $node The active node.
+     * @param int $sectionnum Section number the activity should be created in.
      */
-    public function __construct(\stdClass $course, node $node) {
+    public function __construct(\stdClass $course, node $node, int $sectionnum = 0) {
         $this->course = $course;
         $this->node = $node;
+        $this->sectionnum = $sectionnum;
     }
 
     /**
@@ -59,8 +64,11 @@ class chooser_page implements renderable, templatable {
      */
     public function export_for_template(renderer_base $output): array {
         $context = \context_course::instance($this->course->id);
-        $nodeexporter = new node_exporter($this->node, (int) $this->course->id, $context);
-        $starturl = new moodle_url('/admin/tool/guidance/chooser.php', ['courseid' => $this->course->id]);
+        $nodeexporter = new node_exporter($this->node, (int) $this->course->id, $context, $this->sectionnum);
+        $starturl = new moodle_url('/admin/tool/guidance/chooser.php', [
+            'courseid' => $this->course->id,
+            'section' => $this->sectionnum,
+        ]);
 
         return [
             'title' => get_string('choosertitle', 'tool_guidance'),

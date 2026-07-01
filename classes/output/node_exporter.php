@@ -39,16 +39,21 @@ class node_exporter extends exporter {
     /** @var int Course id used to build answer/CTA URLs. */
     protected $courseid;
 
+    /** @var int Section number the chooser was launched from. */
+    protected $sectionnum;
+
     /**
      * Constructor.
      *
      * @param node $node The node to export.
      * @param int $courseid Course id.
      * @param context $context Context used to format the text properties.
+     * @param int $sectionnum Section number the activity should be created in.
      */
-    public function __construct(node $node, int $courseid, context $context) {
+    public function __construct(node $node, int $courseid, context $context, int $sectionnum = 0) {
         $this->node = $node;
         $this->courseid = $courseid;
+        $this->sectionnum = $sectionnum;
         parent::__construct((object) [], ['context' => $context]);
     }
 
@@ -87,8 +92,13 @@ class node_exporter extends exporter {
                     'modname' => ['type' => PARAM_PLUGIN],
                     'iconurl' => ['type' => PARAM_URL],
                     'title' => ['type' => PARAM_TEXT],
-                    'description' => ['type' => PARAM_TEXT],
+                    'description' => ['type' => PARAM_RAW],
                     'useurl' => ['type' => PARAM_URL],
+                    'canapply' => ['type' => PARAM_BOOL],
+                    'presetid' => ['type' => PARAM_INT],
+                    'courseid' => ['type' => PARAM_INT],
+                    'section' => ['type' => PARAM_INT],
+                    'sesskey' => ['type' => PARAM_RAW],
                     'config' => [
                         'multiple' => true,
                         'type' => [
@@ -122,6 +132,11 @@ class node_exporter extends exporter {
             ];
         }
 
+        // Resolve stored presets from the subplugin, if it is installed and enabled.
+        // tool_guidance has no hard dependency on the subplugin: when it is absent
+        // the chooser degrades to the display-only placeholder behaviour.
+        $stored = $this->get_stored_presets();
+
         $presets = [];
         foreach ($this->node->get_presets() as $preset) {
             $config = [];
@@ -131,16 +146,41 @@ class node_exporter extends exporter {
                     'value' => get_string($row['value'], 'tool_guidance'),
                 ];
             }
-            // Placeholder CTA: returns to the course. Real instance creation comes with the backend.
-            $useurl = new moodle_url('/course/view.php', ['id' => $this->courseid]);
-            $presets[] = [
-                'modname' => $preset->get_modname(),
-                'iconurl' => $output->image_url('monologo', 'mod_' . $preset->get_modname())->out(false),
-                'title' => get_string($preset->get_titlekey(), 'tool_guidance'),
-                'description' => get_string($preset->get_desckey(), 'tool_guidance'),
-                'useurl' => $useurl->out(false),
-                'config' => $config,
-            ];
+
+            $db = $stored[$preset->get_shortname()] ?? null;
+            if ($db) {
+                // A real, applyable preset backed by a stored activity backup.
+                $modname = $db->modname ?: $preset->get_modname();
+                $presets[] = [
+                    'modname' => $modname,
+                    'iconurl' => $output->image_url('monologo', 'mod_' . $modname)->out(false),
+                    'title' => format_string($db->title),
+                    'description' => format_text($db->description, $db->descriptionformat ?? FORMAT_HTML),
+                    'useurl' => '',
+                    'canapply' => true,
+                    'presetid' => (int) $db->id,
+                    'courseid' => $this->courseid,
+                    'section' => $this->sectionnum,
+                    'sesskey' => sesskey(),
+                    'config' => $config,
+                ];
+            } else {
+                // Placeholder CTA: returns to the course (subplugin absent or preset not seeded).
+                $useurl = new moodle_url('/course/view.php', ['id' => $this->courseid]);
+                $presets[] = [
+                    'modname' => $preset->get_modname(),
+                    'iconurl' => $output->image_url('monologo', 'mod_' . $preset->get_modname())->out(false),
+                    'title' => get_string($preset->get_titlekey(), 'tool_guidance'),
+                    'description' => get_string($preset->get_desckey(), 'tool_guidance'),
+                    'useurl' => $useurl->out(false),
+                    'canapply' => false,
+                    'presetid' => 0,
+                    'courseid' => $this->courseid,
+                    'section' => $this->sectionnum,
+                    'sesskey' => sesskey(),
+                    'config' => $config,
+                ];
+            }
         }
 
         return [
@@ -151,5 +191,33 @@ class node_exporter extends exporter {
             'answers' => $answers,
             'presets' => $presets,
         ];
+    }
+
+    /**
+     * Resolve this node's preset short names to stored preset records.
+     *
+     * Returns an empty array (graceful fallback) when the preset subplugin is
+     * not installed or is disabled, so tool_guidance never hard-depends on it.
+     *
+     * @return \stdClass[] Stored presets keyed by short name.
+     */
+    protected function get_stored_presets(): array {
+        if (!$this->node->is_result()) {
+            return [];
+        }
+        if (!class_exists(\guidanceaddon_preset\local\preset_manager::class)) {
+            return [];
+        }
+        // Honour the addon's enable flag (an unset flag means enabled by default).
+        $enabled = get_config('guidanceaddon_preset', 'enabled');
+        if ($enabled !== false && !$enabled) {
+            return [];
+        }
+
+        $shortnames = array_map(static function($preset) {
+            return $preset->get_shortname();
+        }, $this->node->get_presets());
+
+        return \guidanceaddon_preset\local\preset_manager::get_by_shortnames($shortnames);
     }
 }

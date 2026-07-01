@@ -21,7 +21,8 @@
 
     Context variables required for this template:
     * prompt - The result heading.
-    * presets - List of {modname, iconurl, title, description, useurl, config:[{name, value}]}.
+    * presets - List of {modname, iconurl, title, description, useurl, canapply, presetid,
+      courseid, section, sesskey, config:[{name, value}]}.
 
     Example context (json):
     {
@@ -33,6 +34,11 @@
                 "title": "Diagnostic quiz",
                 "description": "A short, auto-graded quiz.",
                 "useurl": "https://example.com/course/view.php?id=2",
+                "canapply": true,
+                "presetid": 3,
+                "courseid": 2,
+                "section": 1,
+                "sesskey": "abc123",
                 "config": [{"name": "Number of questions", "value": "5"}]
             }
         ]
@@ -49,7 +55,7 @@
                         <img src="{{iconurl}}" alt="" aria-hidden="true" class="tool-guidance-preset-icon">
                         <h4 class="tool-guidance-preset-title">{{title}}</h4>
                     </div>
-                    <p class="tool-guidance-preset-desc">{{description}}</p>
+                    <div class="tool-guidance-preset-desc">{{{description}}}</div>
                     {{#config.0}}
                         <details class="tool-guidance-preset-configdetails">
                             <summary>{{#str}}showconfig, tool_guidance{{/str}}</summary>
@@ -63,12 +69,26 @@
                             </dl>
                         </details>
                     {{/config.0}}
-                    <a href="{{useurl}}" class="btn btn-primary tool-guidance-usepreset" data-action="usepreset">
-                        {{#str}}usepreset, tool_guidance{{/str}}
-                    </a>
-                    <p class="tool-guidance-preset-note text-muted">
-                        {{#str}}usepresetnote, tool_guidance{{/str}}
-                    </p>
+                    {{#canapply}}
+                        <form action="{{config.wwwroot}}/admin/tool/guidance/addon/preset/apply.php" method="post"
+                            class="tool-guidance-usepreset-form">
+                            <input type="hidden" name="sesskey" value="{{sesskey}}">
+                            <input type="hidden" name="presetid" value="{{presetid}}">
+                            <input type="hidden" name="courseid" value="{{courseid}}">
+                            <input type="hidden" name="section" value="{{section}}">
+                            <button type="submit" class="btn btn-primary tool-guidance-usepreset" data-action="usepreset">
+                                {{#str}}usepreset, tool_guidance{{/str}}
+                            </button>
+                        </form>
+                    {{/canapply}}
+                    {{^canapply}}
+                        <a href="{{useurl}}" class="btn btn-primary tool-guidance-usepreset" data-action="usepreset">
+                            {{#str}}usepreset, tool_guidance{{/str}}
+                        </a>
+                        <p class="tool-guidance-preset-note text-muted">
+                            {{#str}}usepresetnote, tool_guidance{{/str}}
+                        </p>
+                    {{/canapply}}
                 </div>
             </div>
         {{/presets}}

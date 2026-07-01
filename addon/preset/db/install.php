@@ -15,25 +15,22 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Admin settings registration for the Guidance tool.
+ * Install-time routine for the Guidance activity presets subplugin.
  *
- * @package    tool_guidance
+ * @package    guidanceaddon_preset
  * @copyright  2026 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-if ($hassiteconfig) {
-    // Register the plugin under Site administration > Plugins > Admin tools.
-    // No settings yet in the static prototype.
-    $settings = new admin_settingpage('tool_guidance', get_string('pluginname', 'tool_guidance'));
-    $ADMIN->add('tools', $settings);
+/**
+ * Enable the addon and seed the bundled demo presets.
+ */
+function xmldb_guidanceaddon_preset_install() {
+    // Enable the addon by default so the chooser can use it immediately.
+    set_config('enabled', 1, 'guidanceaddon_preset');
 
-    // Load settings pages for guidance addons (subplugins). Core only auto-loads
-    // settings for a fixed set of plugin types, so the parent tool must load its
-    // own subplugins. Kept generic so any guidanceaddon is picked up.
-    foreach (core_plugin_manager::instance()->get_plugins_of_type('guidanceaddon') as $plugin) {
-        $plugin->load_settings($ADMIN, 'tools', $hassiteconfig);
-    }
+    // Seed the bundled demo presets (idempotent — skips existing shortnames).
+    \guidanceaddon_preset\local\preset_manager::create_default_presets();
 }

@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Admin settings registration for the Guidance tool.
+ * List of available subplugins used in the Guidance tool.
  *
  * @package    tool_guidance
  * @copyright  2026 bdecent gmbh <https://bdecent.de>
@@ -24,16 +24,4 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-if ($hassiteconfig) {
-    // Register the plugin under Site administration > Plugins > Admin tools.
-    // No settings yet in the static prototype.
-    $settings = new admin_settingpage('tool_guidance', get_string('pluginname', 'tool_guidance'));
-    $ADMIN->add('tools', $settings);
-
-    // Load settings pages for guidance addons (subplugins). Core only auto-loads
-    // settings for a fixed set of plugin types, so the parent tool must load its
-    // own subplugins. Kept generic so any guidanceaddon is picked up.
-    foreach (core_plugin_manager::instance()->get_plugins_of_type('guidanceaddon') as $plugin) {
-        $plugin->load_settings($ADMIN, 'tools', $hassiteconfig);
-    }
-}
+$subplugins = (array) json_decode(file_get_contents(__DIR__ . '/subplugins.json'))->plugintypes;

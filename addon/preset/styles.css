@@ -1,0 +1,8 @@
+.path-admin-tool-guidance .guidancepreset-shortname {
+    font-family: monospace;
+    font-size: 0.9em;
+}
+
+.path-admin-tool-guidance .guidancepreset-order a {
+    margin: 0 0.15rem;
+}

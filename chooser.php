@@ -29,6 +29,7 @@ use tool_guidance\output\chooser_page;
 
 $courseid = required_param('courseid', PARAM_INT);
 $nodeid = optional_param('node', null, PARAM_ALPHANUMEXT);
+$sectionnum = optional_param('section', 0, PARAM_INT);
 
 $course = get_course($courseid);
 require_login($course);
@@ -45,6 +46,7 @@ if ($node === null) {
 $pageurl = new moodle_url('/admin/tool/guidance/chooser.php', [
     'courseid' => $course->id,
     'node' => $node->get_id(),
+    'section' => $sectionnum,
 ]);
 
 $PAGE->set_url($pageurl);
@@ -55,7 +57,7 @@ $PAGE->set_title(get_string('choosertitle', 'tool_guidance'));
 $PAGE->set_heading($course->fullname);
 $PAGE->requires->js_call_amd('tool_guidance/chooser', 'init');
 
-$renderable = new chooser_page($course, $node);
+$renderable = new chooser_page($course, $node, $sectionnum);
 $renderer = $PAGE->get_renderer('tool_guidance');
 
 echo $OUTPUT->header();

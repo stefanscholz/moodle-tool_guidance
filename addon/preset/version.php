@@ -15,25 +15,20 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Admin settings registration for the Guidance tool.
+ * Version details for the Guidance activity presets subplugin.
  *
- * @package    tool_guidance
+ * @package    guidanceaddon_preset
  * @copyright  2026 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-if ($hassiteconfig) {
-    // Register the plugin under Site administration > Plugins > Admin tools.
-    // No settings yet in the static prototype.
-    $settings = new admin_settingpage('tool_guidance', get_string('pluginname', 'tool_guidance'));
-    $ADMIN->add('tools', $settings);
-
-    // Load settings pages for guidance addons (subplugins). Core only auto-loads
-    // settings for a fixed set of plugin types, so the parent tool must load its
-    // own subplugins. Kept generic so any guidanceaddon is picked up.
-    foreach (core_plugin_manager::instance()->get_plugins_of_type('guidanceaddon') as $plugin) {
-        $plugin->load_settings($ADMIN, 'tools', $hassiteconfig);
-    }
-}
+$plugin->component = 'guidanceaddon_preset';
+$plugin->version   = 2026070100;
+$plugin->requires  = 2025041400; // Moodle 5.0 or later (targeting 5.2).
+$plugin->maturity  = MATURITY_ALPHA;
+$plugin->release   = '0.1.0';
+$plugin->dependencies = [
+    'tool_guidance' => ANY_VERSION,
+];

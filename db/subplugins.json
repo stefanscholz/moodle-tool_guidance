@@ -1,0 +1,8 @@
+{
+    "plugintypes": {
+        "guidanceaddon": "admin/tool/guidance/addon"
+    },
+    "subplugintypes": {
+        "guidanceaddon": "addon"
+    }
+}

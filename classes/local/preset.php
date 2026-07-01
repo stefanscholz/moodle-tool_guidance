@@ -30,6 +30,9 @@ defined('MOODLE_INTERNAL') || die();
  */
 class preset {
 
+    /** @var string Stable short name; the key linking the tree to a stored preset. */
+    private string $shortname;
+
     /** @var string Activity module name (e.g. 'quiz'). */
     private string $modname;
 
@@ -45,12 +48,14 @@ class preset {
     /**
      * Constructor.
      *
+     * @param string $shortname Stable short name linking to a stored preset.
      * @param string $modname Activity module name.
      * @param string $titlekey Language key for the title.
      * @param string $desckey Language key for the description.
      * @param array $config Ordered config rows.
      */
-    private function __construct(string $modname, string $titlekey, string $desckey, array $config) {
+    private function __construct(string $shortname, string $modname, string $titlekey, string $desckey, array $config) {
+        $this->shortname = $shortname;
         $this->modname = $modname;
         $this->titlekey = $titlekey;
         $this->desckey = $desckey;
@@ -60,14 +65,22 @@ class preset {
     /**
      * Create a preset.
      *
+     * @param string $shortname Stable short name linking to a stored preset.
      * @param string $modname Activity module name.
      * @param string $titlekey Language key for the title.
      * @param string $desckey Language key for the description.
      * @param array $config Ordered list of ['name' => langkey, 'value' => langkey].
      * @return self
      */
-    public static function make(string $modname, string $titlekey, string $desckey, array $config): self {
-        return new self($modname, $titlekey, $desckey, $config);
+    public static function make(string $shortname, string $modname, string $titlekey, string $desckey, array $config): self {
+        return new self($shortname, $modname, $titlekey, $desckey, $config);
+    }
+
+    /**
+     * @return string Stable short name linking to a stored preset.
+     */
+    public function get_shortname(): string {
+        return $this->shortname;
     }
 
     /**

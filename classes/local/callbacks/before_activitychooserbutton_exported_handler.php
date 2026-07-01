@@ -49,7 +49,10 @@ class before_activitychooserbutton_exported_handler {
             return;
         }
 
-        $url = new moodle_url('/admin/tool/guidance/chooser.php', ['courseid' => $courseid]);
+        $url = new moodle_url('/admin/tool/guidance/chooser.php', [
+            'courseid' => $courseid,
+            'section' => $section->section,
+        ]);
 
         $hook->get_activitychooserbutton()->add_action_link(new action_link(
             $url,

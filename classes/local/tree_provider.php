@@ -73,17 +73,17 @@ class tree_provider {
             ]),
 
             'r_quiz' => node::result('r_quiz', 'r_quiz_heading', [
-                preset::make('quiz', 'p_quiz_title', 'p_quiz_desc', [
+                preset::make('quiz_diagnostic', 'quiz', 'p_quiz_title', 'p_quiz_desc', [
                     ['name' => 'cfg_questions', 'value' => 'cfgv_quiz_questions'],
                     ['name' => 'cfg_attempts', 'value' => 'cfgv_quiz_attempts'],
                     ['name' => 'cfg_grademethod', 'value' => 'cfgv_quiz_grademethod'],
                 ]),
-                preset::make('quiz', 'p_quiz2_title', 'p_quiz2_desc', [
+                preset::make('quiz_practice', 'quiz', 'p_quiz2_title', 'p_quiz2_desc', [
                     ['name' => 'cfg_questions', 'value' => 'cfgv_quiz2_questions'],
                     ['name' => 'cfg_attempts', 'value' => 'cfgv_quiz2_attempts'],
                     ['name' => 'cfg_grademethod', 'value' => 'cfgv_quiz2_grademethod'],
                 ]),
-                preset::make('quiz', 'p_quiz3_title', 'p_quiz3_desc', [
+                preset::make('quiz_graded', 'quiz', 'p_quiz3_title', 'p_quiz3_desc', [
                     ['name' => 'cfg_questions', 'value' => 'cfgv_quiz3_questions'],
                     ['name' => 'cfg_attempts', 'value' => 'cfgv_quiz3_attempts'],
                     ['name' => 'cfg_grademethod', 'value' => 'cfgv_quiz3_grademethod'],
@@ -91,12 +91,12 @@ class tree_provider {
             ]),
 
             'r_assign' => node::result('r_assign', 'r_assign_heading', [
-                preset::make('assign', 'p_assign_title', 'p_assign_desc', [
+                preset::make('assign_reflection', 'assign', 'p_assign_title', 'p_assign_desc', [
                     ['name' => 'cfg_submissiontypes', 'value' => 'cfgv_assign_submission'],
                     ['name' => 'cfg_duedate', 'value' => 'cfgv_assign_due'],
                     ['name' => 'cfg_grade', 'value' => 'cfgv_assign_grade'],
                 ]),
-                preset::make('assign', 'p_assign2_title', 'p_assign2_desc', [
+                preset::make('assign_fileupload', 'assign', 'p_assign2_title', 'p_assign2_desc', [
                     ['name' => 'cfg_submissiontypes', 'value' => 'cfgv_assign2_submission'],
                     ['name' => 'cfg_duedate', 'value' => 'cfgv_assign2_due'],
                     ['name' => 'cfg_grade', 'value' => 'cfgv_assign2_grade'],
@@ -104,17 +104,17 @@ class tree_provider {
             ]),
 
             'r_forum' => node::result('r_forum', 'r_forum_heading', [
-                preset::make('forum', 'p_forum_title', 'p_forum_desc', [
+                preset::make('forum_discussion', 'forum', 'p_forum_title', 'p_forum_desc', [
                     ['name' => 'cfg_forumtype', 'value' => 'cfgv_forum_type'],
                     ['name' => 'cfg_subscription', 'value' => 'cfgv_forum_sub'],
                     ['name' => 'cfg_grading', 'value' => 'cfgv_forum_grading'],
                 ]),
-                preset::make('forum', 'p_forum2_title', 'p_forum2_desc', [
+                preset::make('forum_qanda', 'forum', 'p_forum2_title', 'p_forum2_desc', [
                     ['name' => 'cfg_forumtype', 'value' => 'cfgv_forum2_type'],
                     ['name' => 'cfg_subscription', 'value' => 'cfgv_forum2_sub'],
                     ['name' => 'cfg_grading', 'value' => 'cfgv_forum2_grading'],
                 ]),
-                preset::make('forum', 'p_forum3_title', 'p_forum3_desc', [
+                preset::make('forum_intro', 'forum', 'p_forum3_title', 'p_forum3_desc', [
                     ['name' => 'cfg_forumtype', 'value' => 'cfgv_forum3_type'],
                     ['name' => 'cfg_subscription', 'value' => 'cfgv_forum3_sub'],
                     ['name' => 'cfg_grading', 'value' => 'cfgv_forum3_grading'],

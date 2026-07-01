@@ -45,8 +45,10 @@ class api {
     }
 
     /**
-     * Make a node the site-wide chooser entry. The entry must be a root, so this
-     * also flags it as one.
+     * Make a top-level node the site-wide chooser entry.
+     *
+     * A node that is already the chooser entry may remain selected even if later
+     * graph edits give it an incoming answer.
      *
      * @param int $nodeid
      * @return void
@@ -56,11 +58,21 @@ class api {
         if (!$node) {
             return;
         }
-        if (!$node->get('isroot')) {
-            $node->set('isroot', 1);
-            $node->update();
+        $current = (int) get_config('tool_guidance', self::CHOOSER_ENTRY_CONFIG);
+        if ($current !== $nodeid && !self::is_top_level_node($node)) {
+            throw new \invalid_parameter_exception('Chooser entry must be a top-level node');
         }
         set_config(self::CHOOSER_ENTRY_CONFIG, $nodeid, 'tool_guidance');
+    }
+
+    /**
+     * Is this node currently top-level within its graph?
+     *
+     * @param node $node
+     * @return bool
+     */
+    public static function is_top_level_node(node $node): bool {
+        return link::count_records(['graphid' => $node->get('graphid'), 'childnodeid' => $node->get('id')]) === 0;
     }
 
     /**
@@ -76,8 +88,8 @@ class api {
     }
 
     /**
-     * Ensure the site has one initial graph with a root node wired up as the
-     * chooser entry. A no-op once any graph exists.
+     * Ensure the site has one initial graph with a top-level node wired up as
+     * the chooser entry. A no-op once any graph exists.
      *
      * @return void
      */
@@ -99,7 +111,6 @@ class api {
             'title' => get_string('defaultrootquestion', 'tool_guidance'),
             'description' => '',
             'descriptionformat' => FORMAT_HTML,
-            'isroot' => 1,
             'posx' => 60,
             'posy' => 60,
         ]);

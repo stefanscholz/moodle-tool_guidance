@@ -27,7 +27,6 @@ require_once($CFG->libdir . '/adminlib.php');
 
 use tool_guidance\api;
 use tool_guidance\graph;
-use tool_guidance\node;
 
 admin_externalpage_setup('tool_guidance_managegraphs');
 
@@ -97,11 +96,16 @@ echo $OUTPUT->single_button(
     'get'
 );
 
-// Site-wide "Help me choose" start node: pick one root node across all graphs.
+// Site-wide "Help me choose" start node: pick one top-level node across all graphs.
 echo $OUTPUT->heading(get_string('chooserentry', 'tool_guidance'), 3);
 echo html_writer::div(get_string('chooserentrydesc', 'tool_guidance'), 'text-muted mb-2');
 
-$roots = node::get_records(['isroot' => 1], 'graphid, id');
+$roots = [];
+foreach (graph::get_records([], 'name') as $graph) {
+    foreach ($graph->get_root_nodes() as $rootnode) {
+        $roots[] = $rootnode;
+    }
+}
 $entry = api::get_chooser_entry_node();
 if (!$roots) {
     echo $OUTPUT->notification(get_string('norootnodes', 'tool_guidance'), 'info');
@@ -119,8 +123,17 @@ if (!$roots) {
         ]);
     }
     $current = $entry ? (int) $entry->get('id') : 0;
-    $currentlabel = ($current && isset($options[$current]))
-        ? $options[$current] : get_string('chooserentrynone', 'tool_guidance');
+    if ($current && isset($options[$current])) {
+        $currentlabel = $options[$current];
+    } else if ($entry) {
+        $title = (string) $entry->get('title');
+        $currentlabel = get_string('chooserentryoption', 'tool_guidance', (object) [
+            'graph' => $graphnames[(int) $entry->get('graphid')] ?? '?',
+            'node' => $title !== '' ? format_string($title) : get_string('untitlednode', 'tool_guidance'),
+        ]);
+    } else {
+        $currentlabel = get_string('chooserentrynone', 'tool_guidance');
+    }
     echo html_writer::div(get_string('chooserentrycurrent', 'tool_guidance', $currentlabel), 'mb-2');
 
     echo html_writer::start_tag('form', ['method' => 'post', 'action' => $baseurl->out(false), 'class' => 'mb-3']);

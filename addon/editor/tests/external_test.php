@@ -60,9 +60,9 @@ final class external_test extends \advanced_testcase {
         $this->assertEquals('', $q['error']);
         $this->assertGreaterThan(0, $q['id']);
 
-        // First node of a graph becomes a root and the site chooser entry.
+        // First node of a graph is top-level and becomes the site chooser entry.
         $firstnode = new node($q['id']);
-        $this->assertTrue((bool) $firstnode->get('isroot'));
+        $this->assertTrue(\tool_guidance\api::is_top_level_node($firstnode));
         $this->assertEquals($q['id'], \tool_guidance\api::get_chooser_entry_node()->get('id'));
 
         $leaf = save_node::execute(

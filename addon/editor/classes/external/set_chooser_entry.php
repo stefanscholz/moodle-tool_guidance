@@ -46,7 +46,7 @@ class set_chooser_entry extends external_api {
     }
 
     /**
-     * Set the chooser entry (also flags the node as a root).
+     * Set the chooser entry.
      *
      * @param int $nodeid
      * @return bool

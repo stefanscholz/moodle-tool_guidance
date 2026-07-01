@@ -25,8 +25,8 @@
 namespace tool_guidance;
 
 /**
- * Represents one guidance graph. A graph may contain several root nodes; the
- * single node the chooser starts from is tracked site-wide, not per graph.
+ * Represents one guidance graph. Root nodes are inferred from the graph shape:
+ * any node with no incoming answer link is a top-level entry point.
  */
 class graph extends \core\persistent {
     /** @var string Table name. */
@@ -77,12 +77,27 @@ class graph extends \core\persistent {
     }
 
     /**
-     * Return the root nodes of this graph (entry points of its trees).
+     * Return the root nodes of this graph (nodes with no incoming answers).
      *
      * @return node[]
      */
     public function get_root_nodes(): array {
-        return node::get_records(['graphid' => $this->get('id'), 'isroot' => 1], 'id');
+        $nodes = node::get_records(['graphid' => $this->get('id')], 'id');
+        if (!$nodes) {
+            return [];
+        }
+
+        $incoming = [];
+        foreach (link::get_records(['graphid' => $this->get('id')]) as $link) {
+            $childid = (int) $link->get('childnodeid');
+            if ($childid) {
+                $incoming[$childid] = true;
+            }
+        }
+
+        return array_filter($nodes, static function(node $node) use ($incoming): bool {
+            return empty($incoming[(int) $node->get('id')]);
+        });
     }
 
     /**

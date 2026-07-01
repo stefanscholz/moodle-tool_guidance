@@ -148,7 +148,7 @@ class get_graph extends external_api {
                 'description' => new external_value(PARAM_RAW, 'Description'),
                 'targettype' => new external_value(PARAM_ALPHA, 'Target type or empty'),
                 'targetconfig' => new external_value(PARAM_RAW, 'Target JSON config or empty'),
-                'isroot' => new external_value(PARAM_BOOL, 'Whether the node is a root'),
+                'isroot' => new external_value(PARAM_BOOL, 'Legacy manual root flag; ignored by the editor'),
                 'posx' => new external_value(PARAM_FLOAT, 'Canvas X'),
                 'posy' => new external_value(PARAM_FLOAT, 'Canvas Y'),
             ])),

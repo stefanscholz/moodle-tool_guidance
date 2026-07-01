@@ -49,9 +49,6 @@ const STRINGKEYS = [
     ['answerlabel', 'answerlabel'],
     ['removeanswer', 'deleteanswer'],
     ['deletenode', 'deletenode'],
-    ['setentry', 'setrootnode'],
-    ['unsetentry', 'unsetrootnode'],
-    ['rootbadge', 'isrootnode'],
     ['chooserbadge', 'ischooserentry'],
     ['untitled', 'untitlednode'],
     ['confirmdeletenode', 'confirmdeletenodejs'],
@@ -251,17 +248,10 @@ export const init = (graphid) => {
         }));
         let roots = [];
         nodes.forEach((nd) => {
-            if (nd.isroot) {
+            if (incoming.get(nd.id) === 0) {
                 roots.push(nd);
             }
         });
-        if (!roots.length) {
-            nodes.forEach((nd) => {
-                if (incoming.get(nd.id) === 0) {
-                    roots.push(nd);
-                }
-            });
-        }
         if (!roots.length) {
             roots = [nodes.values().next().value];
         }
@@ -697,38 +687,16 @@ export const init = (graphid) => {
         const type = document.createElement('span');
         type.className = 'tg-node-type';
         type.textContent = nd.type === 'leaf' ? s.typeleaf : s.typequestion;
-        const rootbadge = document.createElement('span');
-        rootbadge.className = 'tg-node-root-badge';
-        rootbadge.textContent = s.rootbadge;
         const chooserbadge = document.createElement('span');
         chooserbadge.className = 'tg-node-chooser-badge';
         chooserbadge.textContent = s.chooserbadge;
-        // A star toggles this node's root flag; a graph may have several roots.
-        const star = document.createElement('button');
-        star.type = 'button';
-        star.className = 'btn btn-sm btn-link tg-node-setentry';
-        star.textContent = '★';
-        star.title = nd.isroot ? s.unsetentry : s.setentry;
-        star.addEventListener('click', () => {
-            const next = !nd.isroot;
-            call('set_root', {graphid: graphid, nodeid: nd.id, isroot: next}).then(() => {
-                nd.isroot = next;
-                nd.el.classList.toggle('tg-node-root', next);
-                star.title = next ? s.unsetentry : s.setentry;
-                if (!next) {
-                    // A node that is no longer a root cannot be the chooser entry.
-                    nd.el.classList.remove('tg-node-entry');
-                }
-                return null;
-            }).catch(Notification.exception);
-        });
         const del = document.createElement('button');
         del.type = 'button';
         del.className = 'btn btn-sm btn-link text-danger tg-node-delete';
         del.textContent = '×';
         del.title = s.deletenode;
         del.addEventListener('click', () => deleteNode(nd));
-        header.append(type, star, rootbadge, chooserbadge, del);
+        header.append(type, chooserbadge, del);
         header.addEventListener('mousedown', (e) => startNodeDrag(e, nd));
 
         const body = document.createElement('div');
@@ -791,9 +759,6 @@ export const init = (graphid) => {
         }
         nodelayer.appendChild(card);
         resizeobserver.observe(card);
-        if (nd.isroot) {
-            card.classList.add('tg-node-root');
-        }
         if (nd.type === 'leaf') {
             renderTargetConfig(nd);
         }
@@ -1136,12 +1101,9 @@ export const init = (graphid) => {
         // the option the UI pre-selects; other types need author input first.
         const config = (targettype === 'activity' && activitymods.length)
             ? {modname: activitymods[0].value} : {};
-        // The server marks the first node of a graph as a root automatically;
-        // mirror that here so the badge shows without a reload.
         const nd = {
             id: 0, type: type, title: '', description: '',
             targettype: targettype, targetconfig: config,
-            isroot: nodes.size === 0,
             posx: pos ? pos.x : (60 - pan.x) / scale + Math.random() * 80,
             posy: pos ? pos.y : (60 - pan.y) / scale + Math.random() * 80,
             links: []
@@ -1179,12 +1141,11 @@ export const init = (graphid) => {
                 id: n.id, type: n.type, title: n.title, description: n.description,
                 targettype: n.targettype || (n.type === 'leaf' ? targettypes[0].value : ''),
                 targetconfig: n.targetconfig ? JSON.parse(n.targetconfig) : {},
-                isroot: !!n.isroot,
                 posx: n.posx, posy: n.posy, links: []
             };
             nodes.set(nd.id, nd);
             buildCard(nd);
-            // The one root the "Help me choose" chooser starts from, if it lives
+            // The node the "Help me choose" chooser starts from, if it lives
             // in this graph, is highlighted as the entry.
             if (n.id === data.chooserentrynodeid) {
                 nd.el.classList.add('tg-node-entry');

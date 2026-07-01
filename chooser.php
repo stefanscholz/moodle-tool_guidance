@@ -31,12 +31,28 @@ use tool_guidance\output\chooser_page;
 
 $courseid = required_param('courseid', PARAM_INT);
 $nodeid = optional_param('node', 0, PARAM_INT);
+$modname = optional_param('modname', '', PARAM_PLUGIN);
+$sectionnum = optional_param('section', 0, PARAM_INT);
 
 $course = get_course($courseid);
 require_login($course);
 
 $context = context_course::instance($course->id);
 require_capability('tool/guidance:view', $context);
+
+// Deep-link by activity type (e.g. from the suggestion block's "Set this up"
+// CTA): jump straight to the activity setup form for that module. Adding an
+// activity needs the standard capability, which modedit.php also enforces.
+if ($modname !== '' && array_key_exists($modname, core_plugin_manager::instance()->get_installed_plugins('mod'))) {
+    require_capability('moodle/course:manageactivities', $context);
+    redirect(new moodle_url('/course/modedit.php', [
+        'add' => $modname,
+        'course' => $course->id,
+        'section' => $sectionnum,
+        'return' => 0,
+        'sr' => 0,
+    ]));
+}
 
 $PAGE->set_url(new moodle_url('/admin/tool/guidance/chooser.php', ['courseid' => $course->id, 'node' => $nodeid]));
 $PAGE->set_context($context);

@@ -52,7 +52,7 @@ class rule_form extends \moodleform {
             'lifecycle'  => get_string('signal_lifecycle', 'tool_guidance'),
             'engagement' => get_string('signal_engagement', 'tool_guidance'),
         ];
-        $mform->addElement('select', 'signal', get_string('rule_signal', 'tool_guidance'), $signals);
+        $mform->addElement('select', 'signaltype', get_string('rule_signal', 'tool_guidance'), $signals);
 
         $mform->addElement('select', 'suggestmod', get_string('rule_suggest', 'tool_guidance'),
             self::module_options());

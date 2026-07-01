@@ -77,7 +77,7 @@
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="sortorder" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Precedence; lower wins."/>
         <FIELD NAME="enabled" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="1" SEQUENCE="false"/>
-        <FIELD NAME="signal" TYPE="char" LENGTH="32" NOTNULL="true" SEQUENCE="false" COMMENT="gap|lifecycle|engagement"/>
+        <FIELD NAME="signaltype" TYPE="char" LENGTH="32" NOTNULL="true" SEQUENCE="false" COMMENT="gap|lifecycle|engagement"/>
         <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="conditiontext" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Condition DSL expression."/>
         <FIELD NAME="suggestmod" TYPE="char" LENGTH="32" NOTNULL="true" SEQUENCE="false" COMMENT="Suggested activity module name."/>

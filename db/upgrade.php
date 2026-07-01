@@ -114,11 +114,11 @@ function xmldb_tool_guidance_upgrade($oldversion) {
                     if (count($row) < 8) {
                         continue;
                     }
-                    [$sortorder, $enabled, $signal, $name, $condition, $suggest, $rationale, $preconfig] = $row;
+                    [$sortorder, $enabled, $signaltype, $name, $condition, $suggest, $rationale, $preconfig] = $row;
                     $DB->insert_record('tool_guidance_rule', (object) [
                         'sortorder' => (int) $sortorder,
                         'enabled' => (int) $enabled,
-                        'signal' => trim($signal),
+                        'signaltype' => trim($signaltype),
                         'name' => trim($name),
                         'conditiontext' => trim($condition),
                         'suggestmod' => trim($suggest),
@@ -133,6 +133,19 @@ function xmldb_tool_guidance_upgrade($oldversion) {
         }
 
         upgrade_plugin_savepoint(true, 2026070103, 'tool', 'guidance');
+    }
+
+    if ($oldversion < 2026070105) {
+        // "signal" is a reserved word in MySQL/MariaDB (used by SIGNAL/RESIGNAL in
+        // stored routines) and broke table creation on those engines. Rename it on
+        // any site where the table was already created (e.g. non-MySQL DBs where
+        // the previous step above succeeded).
+        $table = new xmldb_table('tool_guidance_rule');
+        $field = new xmldb_field('signal', XMLDB_TYPE_CHAR, '32', null, XMLDB_NOTNULL, null, null, 'enabled');
+        if ($dbman->table_exists($table) && $dbman->field_exists($table, $field)) {
+            $dbman->rename_field($table, $field, 'signaltype');
+        }
+        upgrade_plugin_savepoint(true, 2026070105, 'tool', 'guidance');
     }
 
     return true;

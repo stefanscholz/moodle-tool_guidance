@@ -18,6 +18,8 @@ as alpha.
 This project originated at MoodleMoot DACH 2026 in the working group of Malte,
 Lily, Jan, Martin, Stefan, Emilie, and Jason.
 
+![MoodleMoot DACH 2026 working group](docs/team.jpg)
+
 ## What It Does
 
 For teachers, the plugin adds a guided chooser to the Moodle activity chooser.

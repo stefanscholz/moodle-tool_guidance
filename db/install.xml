@@ -4,14 +4,13 @@
     xsi:noNamespaceSchemaLocation="../../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
-    <TABLE NAME="tool_guidance_graph" COMMENT="A guidance graph: an admin-authored decision tree with one entry node.">
+    <TABLE NAME="tool_guidance_graph" COMMENT="A guidance graph: an admin-authored decision tree that may contain several root nodes.">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Human readable graph name."/>
         <FIELD NAME="idnumber" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" COMMENT="Optional machine key for the graph."/>
         <FIELD NAME="description" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Longer description shown to admins."/>
         <FIELD NAME="descriptionformat" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="1" SEQUENCE="false"/>
-        <FIELD NAME="rootnodeid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Entry node for this graph."/>
         <FIELD NAME="enabled" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether the graph is active."/>
         <FIELD NAME="usermodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
@@ -33,6 +32,7 @@
         <FIELD NAME="title" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="Question text or leaf heading."/>
         <FIELD NAME="description" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Longer body text."/>
         <FIELD NAME="descriptionformat" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="1" SEQUENCE="false"/>
+        <FIELD NAME="isroot" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether this node is a root (entry point) of its tree; a graph may have several."/>
         <FIELD NAME="targettype" TYPE="char" LENGTH="40" NOTNULL="false" SEQUENCE="false" COMMENT="Leaf only: activity, route or url."/>
         <FIELD NAME="targetconfig" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Leaf only: JSON config for the target type."/>
         <FIELD NAME="posx" TYPE="number" LENGTH="10" DECIMALS="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Canvas X position."/>
@@ -46,6 +46,9 @@
         <KEY NAME="graphid" TYPE="foreign" FIELDS="graphid" REFTABLE="tool_guidance_graph" REFFIELDS="id"/>
         <KEY NAME="usermodified" TYPE="foreign" FIELDS="usermodified" REFTABLE="user" REFFIELDS="id"/>
       </KEYS>
+      <INDEXES>
+        <INDEX NAME="graphid-isroot" UNIQUE="false" FIELDS="graphid, isroot"/>
+      </INDEXES>
     </TABLE>
     <TABLE NAME="tool_guidance_link" COMMENT="A directed edge between two nodes, carrying the answer label.">
       <FIELDS>

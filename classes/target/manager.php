@@ -34,6 +34,7 @@ class manager {
     /** @var array<string,class-string<base>> Map of type key => class. */
     const TYPES = [
         'activity' => activity::class,
+        'preset'   => preset::class,
         'route'    => route::class,
         'url'      => url::class,
     ];

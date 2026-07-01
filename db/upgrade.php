@@ -148,5 +148,45 @@ function xmldb_tool_guidance_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026070105, 'tool', 'guidance');
     }
 
+    if ($oldversion < 2026070106) {
+        // Roots move from a single per-graph pointer (graph.rootnodeid) to a
+        // per-node flag (node.isroot), so a graph can have several roots. The one
+        // node the "Help me choose" chooser starts from is stored site-wide in
+        // config (tool_guidance/chooserentrynodeid).
+        $nodetable = new xmldb_table('tool_guidance_node');
+        $isroot = new xmldb_field('isroot', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'descriptionformat');
+        if (!$dbman->field_exists($nodetable, $isroot)) {
+            $dbman->add_field($nodetable, $isroot);
+        }
+        $index = new xmldb_index('graphid-isroot', XMLDB_INDEX_NOTUNIQUE, ['graphid', 'isroot']);
+        if (!$dbman->index_exists($nodetable, $index)) {
+            $dbman->add_index($nodetable, $index);
+        }
+
+        // Migrate existing per-graph roots into the new flag, and pick the site
+        // chooser entry (prefer an enabled graph's root, else any graph's root).
+        $graphtable = new xmldb_table('tool_guidance_graph');
+        $rootfield = new xmldb_field('rootnodeid');
+        if ($dbman->field_exists($graphtable, $rootfield)) {
+            $entrynodeid = 0;
+            $graphs = $DB->get_records_select('tool_guidance_graph', 'rootnodeid IS NOT NULL AND rootnodeid <> 0');
+            foreach ($graphs as $graph) {
+                $DB->set_field('tool_guidance_node', 'isroot', 1, ['id' => $graph->rootnodeid]);
+                if (!$entrynodeid || !empty($graph->enabled)) {
+                    $entrynodeid = (int) $graph->rootnodeid;
+                }
+            }
+            if ($entrynodeid && !get_config('tool_guidance', 'chooserentrynodeid')) {
+                set_config('chooserentrynodeid', $entrynodeid, 'tool_guidance');
+            }
+            $dbman->drop_field($graphtable, $rootfield);
+        }
+
+        // Every site needs one initial graph for the assignment chooser.
+        \tool_guidance\api::ensure_default_graph();
+
+        upgrade_plugin_savepoint(true, 2026070106, 'tool', 'guidance');
+    }
+
     return true;
 }

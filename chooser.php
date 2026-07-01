@@ -24,6 +24,7 @@
 
 require(__DIR__ . '/../../../config.php');
 
+use tool_guidance\api;
 use tool_guidance\graph;
 use tool_guidance\node;
 use tool_guidance\output\chooser_page;
@@ -44,30 +45,27 @@ $PAGE->set_pagelayout('incourse');
 $PAGE->set_title(get_string('choosertitle', 'tool_guidance'));
 $PAGE->set_heading($course->fullname);
 
-// Prefer an enabled graph; fall back to any graph so authors can preview
-// before publishing.
-$graphs = graph::get_records(['enabled' => 1], 'id', 'ASC', 0, 1);
-if (!$graphs) {
-    $graphs = graph::get_records([], 'id', 'ASC', 0, 1);
-}
-$graph = reset($graphs) ?: null;
+// The chooser starts from the single site-wide entry node. Traversal stays
+// inside that node's graph, so the chooser does not care which graph it is.
+$entry = api::get_chooser_entry_node();
+$graph = $entry ? graph::get_record(['id' => $entry->get('graphid')]) : null;
 
 $node = null;
-if ($graph && $graph->get('rootnodeid')) {
+if ($entry && $graph) {
     if ($nodeid) {
         $node = node::get_record(['id' => $nodeid, 'graphid' => $graph->get('id')]);
     }
     if (!$node) {
-        $node = node::get_record(['id' => $graph->get('rootnodeid')]);
+        $node = $entry;
     }
 }
 
 echo $OUTPUT->header();
-if (!$graph || !$node) {
+if (!$entry || !$graph || !$node) {
     echo $OUTPUT->heading(get_string('choosertitle', 'tool_guidance'));
     echo $OUTPUT->notification(get_string('chooserunavailable', 'tool_guidance'), 'info');
 } else {
-    $renderable = new chooser_page($course, $graph, $node);
+    $renderable = new chooser_page($course, $graph, $node, (int) $entry->get('id'));
     $renderer = $PAGE->get_renderer('tool_guidance');
     echo $renderer->render_chooser_page($renderable);
 }

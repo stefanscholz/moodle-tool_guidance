@@ -24,13 +24,23 @@
     {
     }
 }}
-<div class="tool-guidance-toolbar mb-2" role="toolbar">
+<div class="tool-guidance-toolbar mb-2 d-flex flex-wrap align-items-center" role="toolbar">
     <button type="button" class="btn btn-secondary me-1" data-action="add-question">
         {{#str}}addquestion, tool_guidance{{/str}}
     </button>
     <button type="button" class="btn btn-secondary me-1" data-action="add-leaf">
         {{#str}}addleaf, tool_guidance{{/str}}
     </button>
+    <div class="btn-group me-2" role="group" aria-label="{{#str}}zoomcontrols, tool_guidance{{/str}}">
+        <button type="button" class="btn btn-outline-secondary" data-action="zoom-out"
+            title="{{#str}}zoomout, tool_guidance{{/str}}" aria-label="{{#str}}zoomout, tool_guidance{{/str}}">&minus;</button>
+        <button type="button" class="btn btn-outline-secondary" data-action="zoom-reset"
+            title="{{#str}}zoomreset, tool_guidance{{/str}}">100%</button>
+        <button type="button" class="btn btn-outline-secondary" data-action="zoom-in"
+            title="{{#str}}zoomin, tool_guidance{{/str}}" aria-label="{{#str}}zoomin, tool_guidance{{/str}}">+</button>
+        <button type="button" class="btn btn-outline-secondary" data-action="zoom-fit"
+            title="{{#str}}zoomfit, tool_guidance{{/str}}">{{#str}}zoomfit, tool_guidance{{/str}}</button>
+    </div>
     <span class="text-muted ms-2 align-self-center">{{#str}}editorhint, tool_guidance{{/str}}</span>
 </div>
 <div class="tool-guidance-editor" data-region="editor" tabindex="0">

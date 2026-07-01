@@ -15,17 +15,22 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Plugin version and metadata for tool_guidance (graph chooser + suggestion engine).
+ * Library functions for tool_guidance.
  *
  * @package    tool_guidance
- * @copyright  2026 Lily Asshauer, bdecent gmbh <https://bdecent.de>
+ * @copyright  2026 Lily Asshauer
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'tool_guidance';
-$plugin->version   = 2026070106;
-$plugin->requires  = 2025041400; // Moodle 5.0 or later (targeting 5.2).
-$plugin->maturity  = MATURITY_ALPHA;
-$plugin->release   = '0.2.0';
+/**
+ * Map this plugin's pix icon keys onto FontAwesome classes.
+ *
+ * @return array pixkey => fontawesome class
+ */
+function tool_guidance_get_fontawesome_icon_map(): array {
+    return [
+        'tool_guidance:i/graph' => 'fa-diagram-project',
+    ];
+}

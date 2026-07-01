@@ -28,6 +28,7 @@ use core_external\external_api;
 use core_external\external_function_parameters;
 use core_external\external_single_structure;
 use core_external\external_value;
+use tool_guidance\api;
 use tool_guidance\graph;
 use tool_guidance\node;
 
@@ -108,12 +109,17 @@ class save_node extends external_api {
                 $node->from_record($record);
                 $node->update();
             } else {
+                $graph = new graph($params['graphid']);
+                // The first node of a graph becomes a root so the tree always has
+                // an entry point; further roots are added deliberately with the
+                // root toggle.
+                $record->isroot = $graph->get_root_nodes() ? 0 : 1;
                 $node = new node(0, $record);
                 $node->create();
-                $graph = new graph($params['graphid']);
-                if (!$graph->get('rootnodeid')) {
-                    $graph->set('rootnodeid', $node->get('id'));
-                    $graph->update();
+                // If the site has no chooser entry yet, adopt this first root so
+                // "Help me choose" works straight away.
+                if ($record->isroot && !api::get_chooser_entry_node()) {
+                    api::set_chooser_entry((int) $node->get('id'));
                 }
             }
         } catch (\core\invalid_persistent_exception $e) {

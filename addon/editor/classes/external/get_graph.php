@@ -29,6 +29,7 @@ use core_external\external_function_parameters;
 use core_external\external_multiple_structure;
 use core_external\external_single_structure;
 use core_external\external_value;
+use tool_guidance\api;
 use tool_guidance\graph;
 use tool_guidance\link;
 use tool_guidance\node;
@@ -72,6 +73,7 @@ class get_graph extends external_api {
                 'description' => (string) $n->get('description'),
                 'targettype' => (string) $n->get('targettype'),
                 'targetconfig' => (string) $n->get('targetconfig'),
+                'isroot' => (bool) $n->get('isroot'),
                 'posx' => (float) $n->get('posx'),
                 'posy' => (float) $n->get('posy'),
             ];
@@ -104,8 +106,10 @@ class get_graph extends external_api {
             $activitymods[] = ['value' => $value, 'label' => $label];
         }
 
+        $entry = api::get_chooser_entry_node();
+
         return [
-            'rootnodeid' => (int) $graph->get('rootnodeid'),
+            'chooserentrynodeid' => $entry ? (int) $entry->get('id') : 0,
             'nodes' => $nodes,
             'links' => $links,
             'targettypes' => $targettypes,
@@ -120,7 +124,7 @@ class get_graph extends external_api {
      */
     public static function execute_returns(): external_single_structure {
         return new external_single_structure([
-            'rootnodeid' => new external_value(PARAM_INT, 'Entry node id, 0 if unset'),
+            'chooserentrynodeid' => new external_value(PARAM_INT, 'Site chooser entry node id, 0 if unset'),
             'nodes' => new external_multiple_structure(new external_single_structure([
                 'id' => new external_value(PARAM_INT, 'Node id'),
                 'type' => new external_value(PARAM_ALPHA, 'question or leaf'),
@@ -128,6 +132,7 @@ class get_graph extends external_api {
                 'description' => new external_value(PARAM_RAW, 'Description'),
                 'targettype' => new external_value(PARAM_ALPHA, 'Target type or empty'),
                 'targetconfig' => new external_value(PARAM_RAW, 'Target JSON config or empty'),
+                'isroot' => new external_value(PARAM_BOOL, 'Whether the node is a root'),
                 'posx' => new external_value(PARAM_FLOAT, 'Canvas X'),
                 'posy' => new external_value(PARAM_FLOAT, 'Canvas Y'),
             ])),

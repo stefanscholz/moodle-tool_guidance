@@ -163,6 +163,12 @@ class node_exporter extends exporter {
         }
         $config = $this->node->get_targetconfig_array();
 
+        // Presets resolve against the optional preset addon and degrade to a
+        // display-only card when it is absent, so they get their own path.
+        if ($targettype === 'preset') {
+            return $this->export_preset_target($output, $config);
+        }
+
         if ($targettype === 'activity') {
             $useurl = $this->activity_action_url($config);
             $iconurl = ($config['modname'] ?? '') !== ''
@@ -184,6 +190,63 @@ class node_exporter extends exporter {
             'title' => $this->node->get('title'),
             'description' => (string) $this->node->get('description'),
             'useurl' => $useurl->out(false),
+            'config' => [],
+        ]];
+    }
+
+    /**
+     * Build the recommendation card for a preset leaf target.
+     *
+     * Resolves the short name against the optional guidanceaddon_preset addon.
+     * When the addon or the preset is missing the card is still shown, but with
+     * no "apply" URL (display-only), so the tree stays usable seed-only.
+     *
+     * @param renderer_base $output
+     * @param array $config Decoded target config (expects 'shortname').
+     * @return array
+     */
+    protected function export_preset_target(renderer_base $output, array $config): array {
+        $shortname = trim((string) ($config['shortname'] ?? ''));
+        if ($shortname === '') {
+            // Draft leaf with no preset chosen yet: nothing to offer.
+            return [];
+        }
+
+        $managerclass = \tool_guidance\target\preset::MANAGER;
+        $record = class_exists($managerclass) ? $managerclass::get_by_shortname($shortname) : null;
+
+        // Node text wins; fall back to the preset record when the node is blank.
+        $title = (string) $this->node->get('title');
+        $description = (string) $this->node->get('description');
+        $modname = '';
+        $useurl = null;
+
+        if ($record) {
+            $modname = (string) ($record->modname ?? '');
+            if ($title === '') {
+                $title = (string) $record->title;
+            }
+            if ($description === '') {
+                $description = (string) $record->description;
+            }
+            $useurl = new moodle_url('/admin/tool/guidance/addon/preset/apply.php', [
+                'presetid' => $record->id,
+                'courseid' => $this->courseid,
+                'section' => 0,
+                'sesskey' => sesskey(),
+            ]);
+        }
+
+        $iconurl = $modname !== ''
+            ? $output->image_url('monologo', 'mod_' . $modname)
+            : $output->image_url('i/info', 'core');
+
+        return [[
+            'modname' => $modname,
+            'iconurl' => $iconurl->out(false),
+            'title' => $title,
+            'description' => $description,
+            'useurl' => $useurl ? $useurl->out(false) : '',
             'config' => [],
         ]];
     }

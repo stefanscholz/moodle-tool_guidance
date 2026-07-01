@@ -68,6 +68,11 @@ class node extends \core\persistent {
                 'choices' => [FORMAT_HTML, FORMAT_MOODLE, FORMAT_PLAIN, FORMAT_MARKDOWN],
                 'default' => FORMAT_HTML,
             ],
+            'isroot' => [
+                'type' => PARAM_BOOL,
+                'description' => 'Whether this node is a root (entry point) of its tree.',
+                'default' => false,
+            ],
             'targettype' => [
                 'type' => PARAM_ALPHA,
                 'null' => NULL_ALLOWED,
@@ -152,6 +157,15 @@ class node extends \core\persistent {
      */
     public function is_leaf(): bool {
         return $this->get('type') === self::TYPE_LEAF;
+    }
+
+    /**
+     * Is this node a root (entry point) of its tree?
+     *
+     * @return bool
+     */
+    public function is_root(): bool {
+        return (bool) $this->get('isroot');
     }
 
     /**

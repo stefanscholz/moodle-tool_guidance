@@ -1,0 +1,61 @@
+{
+    "_comment": "Starter guidance graph seeded by guidanceaddon_starter\\local\\graph_seeder. Each graph is keyed by a stable idnumber; seeding is a no-op if that idnumber already exists. Leaf 'target.type' is a tool_guidance target key ('activity' or 'preset'); the remaining keys are that target's config. Preset short names must match records shipped by guidanceaddon_preset (addon/preset/assets/presets.xml); when the preset addon is absent, preset leaves fall back to a display-only card.",
+    "graphs": [
+        {
+            "idnumber": "starter-activity-chooser",
+            "name": "Activity chooser",
+            "description": "Helps a teacher decide which activity to add to a course.",
+            "entry": "root",
+            "nodes": [
+                {"key": "root", "type": "question", "title": "What would you like to do?"},
+
+                {"key": "present", "type": "question", "title": "What would you like to present?"},
+                {"key": "present_detailed", "type": "question", "title": "How should the detailed content be structured?"},
+                {"key": "tm", "type": "leaf", "title": "Text and media area", "description": "Content displayed directly on the course page.", "target": {"type": "activity", "modname": "label"}},
+                {"key": "pg", "type": "leaf", "title": "Page", "description": "A single web page inside the course.", "target": {"type": "activity", "modname": "page"}},
+                {"key": "bk", "type": "leaf", "title": "Book", "description": "Multi-page content organised into chapters and sections.", "target": {"type": "activity", "modname": "book"}},
+
+                {"key": "engage", "type": "question", "title": "What would you like students to share?"},
+                {"key": "f1", "type": "leaf", "title": "Personal introductions", "description": "Each student posts one introduction about themselves.", "target": {"type": "preset", "shortname": "forum_intro"}},
+                {"key": "f2", "type": "leaf", "title": "General discussion forum", "description": "A standard forum for sharing informal experiences, ideas or resources.", "target": {"type": "preset", "shortname": "forum_discussion"}},
+
+                {"key": "assess", "type": "question", "title": "How will students be assessed?"},
+                {"key": "assess_individual", "type": "question", "title": "What type of production will students submit?"},
+                {"key": "as", "type": "leaf", "title": "Assignment", "description": "Students submit a file, text, audio or video for grading.", "target": {"type": "activity", "modname": "assign"}},
+                {"key": "assess_shared", "type": "question", "title": "How should the contribution be organised?"},
+                {"key": "disc", "type": "question", "title": "How should students participate?"},
+                {"key": "qa", "type": "leaf", "title": "Q&A forum", "description": "Students post their own answer before they can see others' responses.", "target": {"type": "preset", "shortname": "forum_qanda"}},
+                {"key": "std", "type": "leaf", "title": "Standard discussion forum", "description": "Students can start discussions and reply freely.", "target": {"type": "preset", "shortname": "forum_discussion"}},
+                {"key": "one", "type": "leaf", "title": "Single discussion per student", "description": "Each student starts one discussion and can reply to others.", "target": {"type": "preset", "shortname": "forum_intro"}},
+                {"key": "database", "type": "leaf", "title": "Database", "description": "A structured entry using predefined fields.", "target": {"type": "activity", "modname": "data"}},
+                {"key": "glossary", "type": "leaf", "title": "Glossary", "description": "A term, concept or definition.", "target": {"type": "activity", "modname": "glossary"}}
+            ],
+            "links": [
+                {"from": "root", "to": "present", "label": "Present"},
+                {"from": "root", "to": "engage", "label": "Build connection and engagement"},
+                {"from": "root", "to": "assess", "label": "Assess"},
+
+                {"from": "present", "to": "tm", "label": "Content displayed directly in Moodle"},
+                {"from": "present", "to": "present_detailed", "label": "Detailed content organised into sections or chapters"},
+                {"from": "present_detailed", "to": "pg", "label": "As a single page"},
+                {"from": "present_detailed", "to": "bk", "label": "As chapters or sections"},
+
+                {"from": "engage", "to": "f1", "label": "A personal introduction or individual contribution"},
+                {"from": "engage", "to": "f2", "label": "Informal experiences, ideas or resources"},
+
+                {"from": "assess", "to": "assess_individual", "label": "An individual production"},
+                {"from": "assess", "to": "assess_shared", "label": "A contribution posted in a shared space"},
+
+                {"from": "assess_individual", "to": "as", "label": "A file, text, audio or video submission"},
+
+                {"from": "assess_shared", "to": "disc", "label": "As a discussion contribution"},
+                {"from": "assess_shared", "to": "database", "label": "As a structured entry using predefined fields"},
+                {"from": "assess_shared", "to": "glossary", "label": "As a term, concept or definition"},
+
+                {"from": "disc", "to": "qa", "label": "Post their own answer before viewing others' responses"},
+                {"from": "disc", "to": "std", "label": "Start discussions and reply freely"},
+                {"from": "disc", "to": "one", "label": "Each student starts one discussion and can reply to others"}
+            ]
+        }
+    ]
+}

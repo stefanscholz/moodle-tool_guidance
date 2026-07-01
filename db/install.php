@@ -34,6 +34,9 @@ defined('MOODLE_INTERNAL') || die();
 function xmldb_tool_guidance_install() {
     global $DB, $CFG;
 
+    // Every site needs one initial graph for the assignment chooser.
+    \tool_guidance\api::ensure_default_graph();
+
     $path = $CFG->dirroot . '/admin/tool/guidance/db/seed_rules.csv';
     if (!is_readable($path)) {
         return true;

@@ -28,6 +28,86 @@ namespace tool_guidance;
  * Central place for graph mutations that need rules beyond single-record validation.
  */
 class api {
+    /** @var string Plugin config name holding the site-wide chooser entry node id. */
+    const CHOOSER_ENTRY_CONFIG = 'chooserentrynodeid';
+
+    /**
+     * The single node the "Help me choose" chooser starts from, if set.
+     *
+     * @return node|null
+     */
+    public static function get_chooser_entry_node(): ?node {
+        $id = (int) get_config('tool_guidance', self::CHOOSER_ENTRY_CONFIG);
+        if (!$id) {
+            return null;
+        }
+        return node::get_record(['id' => $id]) ?: null;
+    }
+
+    /**
+     * Make a node the site-wide chooser entry. The entry must be a root, so this
+     * also flags it as one.
+     *
+     * @param int $nodeid
+     * @return void
+     */
+    public static function set_chooser_entry(int $nodeid): void {
+        $node = node::get_record(['id' => $nodeid]);
+        if (!$node) {
+            return;
+        }
+        if (!$node->get('isroot')) {
+            $node->set('isroot', 1);
+            $node->update();
+        }
+        set_config(self::CHOOSER_ENTRY_CONFIG, $nodeid, 'tool_guidance');
+    }
+
+    /**
+     * Clear the chooser entry if it points at the given node.
+     *
+     * @param int $nodeid
+     * @return void
+     */
+    public static function clear_chooser_entry_if(int $nodeid): void {
+        if ((int) get_config('tool_guidance', self::CHOOSER_ENTRY_CONFIG) === $nodeid) {
+            unset_config(self::CHOOSER_ENTRY_CONFIG, 'tool_guidance');
+        }
+    }
+
+    /**
+     * Ensure the site has one initial graph with a root node wired up as the
+     * chooser entry. A no-op once any graph exists.
+     *
+     * @return void
+     */
+    public static function ensure_default_graph(): void {
+        if (graph::count_records() > 0) {
+            return;
+        }
+        $graph = new graph(0, (object) [
+            'name' => get_string('defaultgraphname', 'tool_guidance'),
+            'description' => '',
+            'descriptionformat' => FORMAT_HTML,
+            'enabled' => 1,
+        ]);
+        $graph->create();
+
+        $node = new node(0, (object) [
+            'graphid' => $graph->get('id'),
+            'type' => node::TYPE_QUESTION,
+            'title' => get_string('defaultrootquestion', 'tool_guidance'),
+            'description' => '',
+            'descriptionformat' => FORMAT_HTML,
+            'isroot' => 1,
+            'posx' => 60,
+            'posy' => 60,
+        ]);
+        $node->create();
+
+        self::set_chooser_entry((int) $node->get('id'));
+    }
+
     /**
      * Would adding the edge parent -> child create a cycle in the graph?
      *
@@ -117,7 +197,7 @@ class api {
     /**
      * Delete a node together with all links touching it.
      *
-     * If the node is the graph root, the graph's rootnodeid is cleared.
+     * If the node is the site chooser entry, that pointer is cleared.
      *
      * @param node $node
      * @return void
@@ -125,18 +205,13 @@ class api {
     public static function delete_node(node $node): void {
         global $DB;
         $nodeid = (int) $node->get('id');
-        $graphid = (int) $node->get('graphid');
 
         // Answers belonging to this question disappear with it.
         $DB->delete_records('tool_guidance_link', ['parentnodeid' => $nodeid]);
         // Answers that pointed at this node become dangling rather than vanish.
         $DB->set_field('tool_guidance_link', 'childnodeid', null, ['childnodeid' => $nodeid]);
 
-        $graph = graph::get_record(['id' => $graphid]);
-        if ($graph && (int) $graph->get('rootnodeid') === $nodeid) {
-            $graph->set('rootnodeid', null);
-            $graph->update();
-        }
+        self::clear_chooser_entry_if($nodeid);
 
         $node->delete();
     }

@@ -22,10 +22,12 @@ use context;
 use core\external\exporter;
 use moodle_url;
 use renderer_base;
-use tool_guidance\local\node;
+use tool_guidance\link;
+use tool_guidance\node;
+use tool_guidance\target\manager as targetmanager;
 
 /**
- * Exports a single decision-tree node for the chooser templates.
+ * Exports a single guidance graph node for the chooser templates.
  *
  * @package    tool_guidance
  * @copyright  2026 bdecent gmbh <https://bdecent.de>
@@ -68,7 +70,7 @@ class node_exporter extends exporter {
      */
     protected static function define_other_properties() {
         return [
-            'id' => ['type' => PARAM_ALPHANUMEXT],
+            'id' => ['type' => PARAM_INT],
             'isquestion' => ['type' => PARAM_BOOL],
             'isresult' => ['type' => PARAM_BOOL],
             'prompt' => ['type' => PARAM_TEXT],
@@ -78,13 +80,13 @@ class node_exporter extends exporter {
                     'label' => ['type' => PARAM_TEXT],
                     'explanation' => ['type' => PARAM_TEXT],
                     'url' => ['type' => PARAM_URL],
-                    'target' => ['type' => PARAM_ALPHANUMEXT],
+                    'target' => ['type' => PARAM_INT],
                 ],
             ],
             'presets' => [
                 'multiple' => true,
                 'type' => [
-                    'modname' => ['type' => PARAM_PLUGIN],
+                    'modname' => ['type' => PARAM_RAW],
                     'iconurl' => ['type' => PARAM_URL],
                     'title' => ['type' => PARAM_TEXT],
                     'description' => ['type' => PARAM_TEXT],
@@ -102,54 +104,104 @@ class node_exporter extends exporter {
     }
 
     /**
+     * Build the answer list for a question node.
+     *
+     * @return array
+     */
+    protected function export_answers(): array {
+        $answers = [];
+        foreach (link::get_records(['parentnodeid' => $this->node->get('id')], 'sortorder, id') as $link) {
+            $childid = (int) $link->get('childnodeid');
+            if (!$childid) {
+                // Dangling answer: nothing to navigate to yet.
+                continue;
+            }
+            $url = new moodle_url('/admin/tool/guidance/chooser.php', [
+                'courseid' => $this->courseid,
+                'node' => $childid,
+            ]);
+            $answers[] = [
+                'label' => $link->get('answerlabel'),
+                'explanation' => '',
+                'url' => $url->out(false),
+                'target' => $childid,
+            ];
+        }
+        return $answers;
+    }
+
+    /**
+     * Build the action URL for an activity target, given this chooser's course.
+     *
+     * @param array $config Decoded target config.
+     * @return moodle_url|null
+     */
+    protected function activity_action_url(array $config): ?moodle_url {
+        $modname = $config['modname'] ?? '';
+        if ($modname === '') {
+            return null;
+        }
+        return new moodle_url('/course/modedit.php', [
+            'add' => $modname,
+            'course' => $this->courseid,
+            'section' => 0,
+            'return' => 0,
+            'sr' => 0,
+        ]);
+    }
+
+    /**
+     * Build the single-item preset list for a leaf node's target.
+     *
+     * @param renderer_base $output
+     * @return array
+     */
+    protected function export_presets(renderer_base $output): array {
+        $targettype = $this->node->get('targettype');
+        if (!$targettype || !targetmanager::type_exists($targettype)) {
+            return [];
+        }
+        $config = $this->node->get_targetconfig_array();
+
+        if ($targettype === 'activity') {
+            $useurl = $this->activity_action_url($config);
+            $iconurl = ($config['modname'] ?? '') !== ''
+                ? $output->image_url('monologo', 'mod_' . $config['modname'])
+                : $output->image_url('i/info', 'core');
+        } else {
+            $useurl = targetmanager::get_target($targettype, $config)->get_action_url();
+            $iconurl = $output->image_url('i/info', 'core');
+        }
+
+        if (!$useurl) {
+            // Draft leaf with no target details configured yet: nothing to offer.
+            return [];
+        }
+
+        return [[
+            'modname' => $targettype === 'activity' ? ($config['modname'] ?? '') : '',
+            'iconurl' => $iconurl->out(false),
+            'title' => $this->node->get('title'),
+            'description' => (string) $this->node->get('description'),
+            'useurl' => $useurl->out(false),
+            'config' => [],
+        ]];
+    }
+
+    /**
      * Build the template context for the node.
      *
      * @param renderer_base $output
      * @return array
      */
     protected function get_other_values(renderer_base $output) {
-        $answers = [];
-        foreach ($this->node->get_answers() as $answer) {
-            $url = new moodle_url('/admin/tool/guidance/chooser.php', [
-                'courseid' => $this->courseid,
-                'node' => $answer['target'],
-            ]);
-            $answers[] = [
-                'label' => get_string($answer['labelkey'], 'tool_guidance'),
-                'explanation' => get_string($answer['explainkey'], 'tool_guidance'),
-                'url' => $url->out(false),
-                'target' => $answer['target'],
-            ];
-        }
-
-        $presets = [];
-        foreach ($this->node->get_presets() as $preset) {
-            $config = [];
-            foreach ($preset->get_config() as $row) {
-                $config[] = [
-                    'name' => get_string($row['name'], 'tool_guidance'),
-                    'value' => get_string($row['value'], 'tool_guidance'),
-                ];
-            }
-            // Placeholder CTA: returns to the course. Real instance creation comes with the backend.
-            $useurl = new moodle_url('/course/view.php', ['id' => $this->courseid]);
-            $presets[] = [
-                'modname' => $preset->get_modname(),
-                'iconurl' => $output->image_url('monologo', 'mod_' . $preset->get_modname())->out(false),
-                'title' => get_string($preset->get_titlekey(), 'tool_guidance'),
-                'description' => get_string($preset->get_desckey(), 'tool_guidance'),
-                'useurl' => $useurl->out(false),
-                'config' => $config,
-            ];
-        }
-
         return [
-            'id' => $this->node->get_id(),
+            'id' => $this->node->get('id'),
             'isquestion' => $this->node->is_question(),
-            'isresult' => $this->node->is_result(),
-            'prompt' => get_string($this->node->get_textkey(), 'tool_guidance'),
-            'answers' => $answers,
-            'presets' => $presets,
+            'isresult' => $this->node->is_leaf(),
+            'prompt' => $this->node->get('title'),
+            'answers' => $this->node->is_question() ? $this->export_answers() : [],
+            'presets' => $this->node->is_leaf() ? $this->export_presets($output) : [],
         ];
     }
 }

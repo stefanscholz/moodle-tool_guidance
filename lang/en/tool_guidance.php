@@ -15,18 +15,118 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Strings for the Guidance activity chooser tool.
+ * Language strings for tool_guidance.
+ * Strings for the Guidance activity chooser tool (chooser + suggestion engine).
  *
  * @package    tool_guidance
- * @copyright  2026 bdecent gmbh <https://bdecent.de>
+ * @copyright  2026 Lily Asshauer, bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$string['pluginname'] = 'Guidance activity chooser';
+$string['pluginname'] = 'Guidance';
+
+// Capabilities.
+$string['guidance:manage'] = 'Manage guidance graphs';
 $string['guidance:view'] = 'Use the guidance activity chooser';
-$string['privacy:metadata'] = 'The Guidance activity chooser tool does not store any personal data.';
+
+// Admin pages.
+$string['managegraphs'] = 'Manage guidance graphs';
+$string['graphs'] = 'Guidance graphs';
+$string['nographs'] = 'No guidance graphs yet.';
+$string['addgraph'] = 'Add graph';
+$string['editgraph'] = 'Edit graph';
+$string['deletegraph'] = 'Delete graph';
+$string['confirmdeletegraph'] = 'Delete the graph "{$a}" and all of its nodes and answers? This cannot be undone.';
+$string['backtographs'] = 'Back to graphs';
+
+// Graph fields.
+$string['graphname'] = 'Name';
+$string['graphidnumber'] = 'ID number';
+$string['graphidnumber_help'] = 'An optional machine-readable key used to reference this graph from code or imports.';
+$string['graphdescription'] = 'Description';
+$string['graphenabled'] = 'Enabled';
+
+// Node management.
+$string['managenodesfor'] = 'Nodes: {$a}';
+$string['nodes'] = 'Nodes';
+$string['nonodes'] = 'This graph has no nodes yet.';
+$string['addnode'] = 'Add node';
+$string['editnode'] = 'Edit node';
+$string['deletenode'] = 'Delete node';
+$string['confirmdeletenode'] = 'Delete the node "{$a}" and every answer pointing to or from it?';
+$string['rootnode'] = 'Entry node';
+$string['setrootnode'] = 'Set as entry node';
+$string['isrootnode'] = 'Entry node';
+$string['noroot'] = 'No entry node set.';
+
+// Node fields.
+$string['nodetype'] = 'Type';
+$string['nodetype:question'] = 'Question';
+$string['nodetype:leaf'] = 'Leaf (recommendation)';
+$string['nodetitle'] = 'Title / question';
+$string['nodedescription'] = 'Description';
+$string['nodetargettype'] = 'Target type';
+
+// Canvas editor.
+$string['addquestion'] = 'Add question';
+$string['addleaf'] = 'Add leaf';
+$string['answerlabeldefault'] = 'Answer';
+$string['createnodehere'] = 'Create here';
+$string['editorhint'] = 'Drag from a question\'s bottom dot to drop an answer: onto a node to link it, or onto empty space to leave it dangling. Drag an answer\'s dot to point it at a node (or empty space to create one). Drag the background to pan.';
+$string['untitlednode'] = '(untitled)';
+$string['confirmdeletenodejs'] = 'Delete this node and every answer touching it?';
+
+// Answer links.
+$string['answers'] = 'Answers';
+$string['noanswers'] = 'No answers from this question yet.';
+$string['addanswer'] = 'Add answer';
+$string['editanswer'] = 'Edit answer';
+$string['deleteanswer'] = 'Delete answer';
+$string['confirmdeleteanswer'] = 'Delete the answer "{$a}"?';
+$string['answerlabel'] = 'Answer';
+$string['answerchild'] = 'Leads to node';
+$string['sortorder'] = 'Order';
+
+// Targets.
+$string['target:activity'] = 'Create an activity';
+$string['target:activity:action'] = 'Add this activity';
+$string['target:activity:modname'] = 'Activity type';
+$string['target:route'] = 'Internal page';
+$string['target:route:action'] = 'Open page';
+$string['target:route:path'] = 'Moodle path';
+$string['target:route:path_help'] = 'A site-relative path beginning with a slash, e.g. /admin/settings.php?section=modsettingurl';
+$string['target:url'] = 'External link';
+$string['target:url:action'] = 'Open link';
+$string['target:url:url'] = 'URL';
+$string['target:url:newwindow'] = 'Open in a new window';
+
+// Errors.
+$string['error:leafneedstarget'] = 'A leaf node must have a target type.';
+$string['error:unknowntargettype'] = 'Unknown target type: {$a}';
+$string['error:questionhastarget'] = 'A question node cannot have a target.';
+$string['error:invalidtargetconfig'] = 'The target configuration is not valid JSON.';
+$string['error:nodenotfound'] = 'Referenced node does not exist.';
+$string['error:parentnotquestion'] = 'Answers can only start from a question node.';
+$string['error:crossgraphlink'] = 'Both nodes of an answer must belong to the same graph.';
+$string['error:selflink'] = 'A node cannot link to itself.';
+$string['error:cycle'] = 'This answer would create a loop in the graph.';
+$string['error:activitymodnamerequired'] = 'Choose an activity type.';
+$string['error:activitymodnameunknown'] = 'Unknown activity type: {$a}';
+$string['error:routepathrequired'] = 'Enter a Moodle path.';
+$string['error:routepathrelative'] = 'The path must be site-relative and start with a slash.';
+$string['error:urlrequired'] = 'Enter a URL.';
+$string['error:urlinvalid'] = 'Enter a valid http(s) URL.';
+
+// Privacy.
+$string['privacy:metadata:usermodified'] = 'The user who last created or modified this record.';
+$string['privacy:metadata:timecreated'] = 'The time the record was created.';
+$string['privacy:metadata:timemodified'] = 'The time the record was last modified.';
+$string['privacy:metadata:tool_guidance_graph'] = 'Guidance graph definitions, including which admin last edited each graph.';
+$string['privacy:metadata:tool_guidance_node'] = 'Guidance node definitions, including which admin last edited each node.';
+$string['privacy:metadata:tool_guidance_link'] = 'Guidance answer links, including which admin last edited each link.';
+$string['guidance:managerules'] = 'Manage activity suggestion rules';
 
 // Activity chooser ("plus" menu) entry point.
 $string['choosebutton'] = 'Help me choose…';
@@ -35,6 +135,7 @@ $string['choosebutton'] = 'Help me choose…';
 $string['choosertitle'] = 'Help me choose';
 $string['chooserintro'] = 'Answer a few questions and we will suggest an activity, set up for your goal.';
 $string['startover'] = 'Start over';
+$string['chooserunavailable'] = 'No guidance tree has been set up for this course yet.';
 $string['suggestedpresets'] = 'Suggested activities';
 $string['usepreset'] = 'Use this template';
 $string['showconfig'] = 'Show configuration';
@@ -79,6 +180,11 @@ $string['p_forum2_desc'] = 'Students must post their own answer before they can 
 $string['p_forum3_title'] = 'Introduction';
 $string['p_forum3_desc'] = 'A forum that asks each student to post a short introduction about themselves to get the group acquainted.';
 
+// Generic preset shown when a suggested activity has no bespoke template yet.
+$string['p_generic_title'] = 'Add {$a}';
+$string['p_generic_desc'] = 'Create this activity with sensible defaults. A tailored template will follow.';
+$string['r_generic_heading'] = '{$a} is a good next step';
+
 // Preset configuration labels.
 $string['cfg_questions'] = 'Number of questions';
 $string['cfg_attempts'] = 'Attempts allowed';
@@ -115,3 +221,64 @@ $string['cfgv_forum2_grading'] = 'Whole forum grading';
 $string['cfgv_forum3_type'] = 'Each person posts one discussion';
 $string['cfgv_forum3_sub'] = 'Forced';
 $string['cfgv_forum3_grading'] = 'None';
+
+// ---------------------------------------------------------------------------
+// Suggestion engine (drives the block's automatic recommendation).
+// ---------------------------------------------------------------------------
+
+// Settings.
+$string['settings'] = 'Settings';
+$string['enableai'] = 'Use AI to re-rank suggestions';
+$string['enableai_desc'] = 'When a Moodle AI provider is configured, allow it to reorder the matched suggestions to pick the most relevant one. The deterministic rule order is always used as a fallback. Suggestions work fully without AI.';
+$string['cooldowndays'] = 'Dismissal cooldown (days)';
+$string['cooldowndays_desc'] = 'How long a skipped suggestion stays hidden for the whole course before it can be suggested again.';
+$string['enableengagementfacts'] = 'Compute engagement facts';
+$string['enableengagementfacts_desc'] = 'Compute the costlier engagement facts (recent activity, completion rate, forum posts, quiz attempts, submission rate). These power the engagement-signal rules but add log and database queries.';
+
+// Rule management.
+$string['managerules'] = 'Manage rules';
+$string['managerules_desc'] = 'Rules are evaluated top to bottom. The first rule that matches the course, whose activity is installed and not currently dismissed, becomes the suggestion shown.';
+$string['addrule'] = 'Add rule';
+$string['editrule'] = 'Edit rule';
+$string['deleterule'] = 'Delete rule';
+$string['confirmdelete'] = 'Are you sure you want to delete the rule "{$a}"?';
+$string['ruledeleted'] = 'Rule deleted';
+$string['rulesaved'] = 'Rule saved';
+$string['norules'] = 'There are no suggestion rules yet.';
+$string['moveup'] = 'Move up';
+$string['movedown'] = 'Move down';
+$string['enable'] = 'Enable';
+$string['disable'] = 'Disable';
+
+// Rule fields.
+$string['rule_name'] = 'Name';
+$string['rule_signal'] = 'Signal';
+$string['rule_condition'] = 'Condition';
+$string['rule_condition_help'] = 'A condition expression. Clauses are joined with AND, for example: <code>has_purpose_content == true AND has_purpose_assessment == false AND term_stage in (week1|early|mid)</code>. Operators: == != &lt; &lt;= &gt; &gt;= in. An operand may be a number, true/false, an enum word, another fact name, or a set like (a|b|c) for "in".';
+$string['rule_suggest'] = 'Suggested activity';
+$string['rule_rationale'] = 'Rationale (shown to the teacher)';
+$string['rule_preconfig'] = 'Pre-configuration';
+$string['rule_preconfig_help'] = 'Optional key=value pairs separated by semicolons, passed to the add-activity flow, for example: <code>type=qanda;name=Questions and answers</code>. A "name" key provides the default activity name.';
+$string['rule_enabled'] = 'Enabled';
+$string['rule_sortorder'] = 'Order';
+$string['conditioninvalid'] = 'The condition could not be parsed near: {$a}';
+$string['availablefacts'] = 'Available facts';
+
+// Signals.
+$string['signal_gap'] = 'Pedagogical gap';
+$string['signal_lifecycle'] = 'Lifecycle/timing';
+$string['signal_engagement'] = 'Engagement/health';
+
+// Cache.
+$string['cachedef_suggestions'] = 'Computed activity suggestion per course';
+
+// Privacy.
+$string['privacy:metadata:dismissed'] = 'Records of which suggestion a user dismissed in a course.';
+$string['privacy:metadata:dismissed:courseid'] = 'The course the suggestion was dismissed in.';
+$string['privacy:metadata:dismissed:ruleid'] = 'The suggestion rule that was dismissed.';
+$string['privacy:metadata:dismissed:userid'] = 'The user who dismissed the suggestion.';
+$string['privacy:metadata:dismissed:timecreated'] = 'When the suggestion was dismissed.';
+
+// Subplugin type display names.
+$string['subplugintype_guidanceaddon'] = 'Guidance addon';
+$string['subplugintype_guidanceaddon_plural'] = 'Guidance addons';

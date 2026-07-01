@@ -22,8 +22,8 @@ use moodle_url;
 use renderable;
 use renderer_base;
 use templatable;
-use tool_guidance\local\node;
-use tool_guidance\local\tree_provider;
+use tool_guidance\graph;
+use tool_guidance\node;
 
 /**
  * Renderable for the whole guidance chooser page (one active node).
@@ -37,23 +37,23 @@ class chooser_page implements renderable, templatable {
     /** @var \stdClass Course record. */
     protected $course;
 
+    /** @var graph The graph being traversed. */
+    protected $graph;
+
     /** @var node The active node. */
     protected $node;
-
-    /** @var int Section number the chooser was launched from. */
-    protected $sectionnum;
 
     /**
      * Constructor.
      *
      * @param \stdClass $course Course record.
+     * @param graph $graph The graph being traversed.
      * @param node $node The active node.
-     * @param int $sectionnum Section number the activity should be created in.
      */
-    public function __construct(\stdClass $course, node $node, int $sectionnum = 0) {
+    public function __construct(\stdClass $course, graph $graph, node $node) {
         $this->course = $course;
+        $this->graph = $graph;
         $this->node = $node;
-        $this->sectionnum = $sectionnum;
     }
 
     /**
@@ -64,16 +64,13 @@ class chooser_page implements renderable, templatable {
      */
     public function export_for_template(renderer_base $output): array {
         $context = \context_course::instance($this->course->id);
-        $nodeexporter = new node_exporter($this->node, (int) $this->course->id, $context, $this->sectionnum);
-        $starturl = new moodle_url('/admin/tool/guidance/chooser.php', [
-            'courseid' => $this->course->id,
-            'section' => $this->sectionnum,
-        ]);
+        $nodeexporter = new node_exporter($this->node, (int) $this->course->id, $context);
+        $starturl = new moodle_url('/admin/tool/guidance/chooser.php', ['courseid' => $this->course->id]);
 
         return [
             'title' => get_string('choosertitle', 'tool_guidance'),
             'intro' => get_string('chooserintro', 'tool_guidance'),
-            'isstart' => $this->node->get_id() === tree_provider::START,
+            'isstart' => (int) $this->node->get('id') === (int) $this->graph->get('rootnodeid'),
             'starturl' => $starturl->out(false),
             'startoverlabel' => get_string('startover', 'tool_guidance'),
             'node' => $nodeexporter->export($output),

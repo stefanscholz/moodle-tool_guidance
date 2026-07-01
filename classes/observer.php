@@ -14,18 +14,28 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace tool_guidance;
+
+use core\event\base;
+use tool_guidance\local\engine;
+
 /**
- * Plugin version and metadata for tool_guidance (graph chooser + suggestion engine).
+ * Event observers that keep the cached suggestion fresh.
  *
  * @package    tool_guidance
- * @copyright  2026 Lily Asshauer, bdecent gmbh <https://bdecent.de>
+ * @copyright  2026 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+class observer {
 
-defined('MOODLE_INTERNAL') || die();
-
-$plugin->component = 'tool_guidance';
-$plugin->version   = 2026070104;
-$plugin->requires  = 2025041400; // Moodle 5.0 or later (targeting 5.2).
-$plugin->maturity  = MATURITY_ALPHA;
-$plugin->release   = '0.2.0';
+    /**
+     * Invalidate the cached suggestion when a course's activities change.
+     *
+     * @param base $event
+     */
+    public static function course_changed(base $event): void {
+        if (!empty($event->courseid)) {
+            engine::purge_course((int) $event->courseid);
+        }
+    }
+}

@@ -33,10 +33,23 @@ git clone git@github.com:stefanscholz/moodle-tool_guidance.git admin/tool/guidan
 
 Then visit **Site administration → Notifications** to install the plugin.
 
+## Admin: guidance graph editor
+
+Site administrators (capability `tool/guidance:manage`) can author the
+decision trees themselves at **Site administration → Plugins → Admin tools →
+Guidance graphs** (`admin/tool/guidance/index.php`). Each graph is a set of
+question and leaf nodes connected by answers, edited on a drag-and-drop canvas
+(`edit.php`) backed by AJAX external functions (`classes/external/`) and
+stored in `tool_guidance_graph`/`_node`/`_link` tables (`db/install.xml`).
+
+This is the intended real source for the tree the chooser walks — see
+"Wiring up the backend later" below.
+
 ## Wiring up the backend later
 
 - Replace `tool_guidance\local\tree_provider` (return real `node`/`preset`
-  objects, e.g. behind a `tree_source` interface).
+  objects, e.g. behind a `tree_source` interface) — likely backed by the
+  graph editor's storage described above.
 - Implement real activity creation behind the result-card "Use this template"
   action (currently a placeholder that returns to the course).
 

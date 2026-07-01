@@ -15,17 +15,26 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Plugin version and metadata for tool_guidance (graph chooser + suggestion engine).
+ * Event observers: invalidate the cached suggestion when a course changes.
  *
  * @package    tool_guidance
- * @copyright  2026 Lily Asshauer, bdecent gmbh <https://bdecent.de>
+ * @copyright  2026 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'tool_guidance';
-$plugin->version   = 2026070104;
-$plugin->requires  = 2025041400; // Moodle 5.0 or later (targeting 5.2).
-$plugin->maturity  = MATURITY_ALPHA;
-$plugin->release   = '0.2.0';
+$observers = [
+    [
+        'eventname' => '\core\event\course_module_created',
+        'callback'  => '\tool_guidance\observer::course_changed',
+    ],
+    [
+        'eventname' => '\core\event\course_module_updated',
+        'callback'  => '\tool_guidance\observer::course_changed',
+    ],
+    [
+        'eventname' => '\core\event\course_module_deleted',
+        'callback'  => '\tool_guidance\observer::course_changed',
+    ],
+];

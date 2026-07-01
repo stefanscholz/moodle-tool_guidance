@@ -29,6 +29,7 @@ use core_external\external_function_parameters;
 use core_external\external_multiple_structure;
 use core_external\external_single_structure;
 use core_external\external_value;
+use tool_guidance\api;
 use tool_guidance\graph;
 use tool_guidance\link;
 use tool_guidance\node;
@@ -72,6 +73,7 @@ class get_graph extends external_api {
                 'description' => (string) $n->get('description'),
                 'targettype' => (string) $n->get('targettype'),
                 'targetconfig' => (string) $n->get('targetconfig'),
+                'isroot' => (bool) $n->get('isroot'),
                 'posx' => (float) $n->get('posx'),
                 'posy' => (float) $n->get('posy'),
             ];
@@ -104,18 +106,16 @@ class get_graph extends external_api {
             $activitymods[] = ['value' => $value, 'label' => $label];
         }
 
-        // Presets are provided by the guidanceaddon_preset subplugin, if installed.
-        $presets = [];
-        $presetlabel = '';
-        if (class_exists(\guidanceaddon_preset\local\preset_manager::class)) {
-            foreach (\guidanceaddon_preset\local\preset_manager::get_enabled() as $preset) {
-                $presets[] = ['value' => (int) $preset->id, 'label' => format_string($preset->title)];
-            }
-            $presetlabel = get_string('target:preset:preset', 'guidanceaddon_preset');
-        }
+        $entry = api::get_chooser_entry_node();
+
+        // Bundled starter templates (idnumber "starter-*") ship without a
+        // hand-authored layout; tell the editor to auto-arrange them on view.
+        $idnumber = (string) $graph->get('idnumber');
+        $autolayout = ($idnumber !== '' && strpos($idnumber, 'starter-') === 0);
 
         return [
-            'rootnodeid' => (int) $graph->get('rootnodeid'),
+            'chooserentrynodeid' => $entry ? (int) $entry->get('id') : 0,
+            'autolayout' => $autolayout,
             'nodes' => $nodes,
             'links' => $links,
             'targettypes' => $targettypes,
@@ -132,7 +132,8 @@ class get_graph extends external_api {
      */
     public static function execute_returns(): external_single_structure {
         return new external_single_structure([
-            'rootnodeid' => new external_value(PARAM_INT, 'Entry node id, 0 if unset'),
+            'chooserentrynodeid' => new external_value(PARAM_INT, 'Site chooser entry node id, 0 if unset'),
+            'autolayout' => new external_value(PARAM_BOOL, 'Whether the editor should auto-arrange this graph on view'),
             'nodes' => new external_multiple_structure(new external_single_structure([
                 'id' => new external_value(PARAM_INT, 'Node id'),
                 'type' => new external_value(PARAM_ALPHA, 'question or leaf'),
@@ -140,6 +141,7 @@ class get_graph extends external_api {
                 'description' => new external_value(PARAM_RAW, 'Description'),
                 'targettype' => new external_value(PARAM_ALPHA, 'Target type or empty'),
                 'targetconfig' => new external_value(PARAM_RAW, 'Target JSON config or empty'),
+                'isroot' => new external_value(PARAM_BOOL, 'Whether the node is a root'),
                 'posx' => new external_value(PARAM_FLOAT, 'Canvas X'),
                 'posy' => new external_value(PARAM_FLOAT, 'Canvas Y'),
             ])),

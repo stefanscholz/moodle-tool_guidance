@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * External function: flag or unflag a node as a root of its tree.
+ * External function: set the site-wide "Help me choose" chooser entry node.
  *
  * @package    tool_guidance
  * @copyright  2026 Lily Asshauer
@@ -31,9 +31,9 @@ use tool_guidance\api;
 use tool_guidance\node;
 
 /**
- * Toggles a node's root flag. A graph may have several roots.
+ * Marks one node, site-wide, as the node the chooser starts from.
  */
-class set_root extends external_api {
+class set_chooser_entry extends external_api {
     /**
      * Parameters.
      *
@@ -41,40 +41,26 @@ class set_root extends external_api {
      */
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
-            'graphid' => new external_value(PARAM_INT, 'Graph id'),
             'nodeid' => new external_value(PARAM_INT, 'Node id'),
-            'isroot' => new external_value(PARAM_BOOL, 'Whether the node should be a root', VALUE_DEFAULT, true),
         ]);
     }
 
     /**
-     * Set (or clear) the node's root flag.
+     * Set the chooser entry (also flags the node as a root).
      *
-     * @param int $graphid
      * @param int $nodeid
-     * @param bool $isroot
      * @return bool
      */
-    public static function execute(int $graphid, int $nodeid, bool $isroot = true): bool {
-        $params = self::validate_parameters(
-            self::execute_parameters(),
-            ['graphid' => $graphid, 'nodeid' => $nodeid, 'isroot' => $isroot]
-        );
+    public static function execute(int $nodeid): bool {
+        $params = self::validate_parameters(self::execute_parameters(), ['nodeid' => $nodeid]);
         $context = \context_system::instance();
         self::validate_context($context);
         require_capability('tool/guidance:manage', $context);
 
-        $node = new node($params['nodeid']);
-        if ((int) $node->get('graphid') !== $params['graphid']) {
-            throw new \invalid_parameter_exception('Node does not belong to the graph');
+        if (!node::get_record(['id' => $params['nodeid']])) {
+            throw new \invalid_parameter_exception('Unknown node');
         }
-        $node->set('isroot', $params['isroot'] ? 1 : 0);
-        $node->update();
-
-        // A node that is no longer a root cannot remain the chooser entry.
-        if (!$params['isroot']) {
-            api::clear_chooser_entry_if($params['nodeid']);
-        }
+        api::set_chooser_entry($params['nodeid']);
         return true;
     }
 

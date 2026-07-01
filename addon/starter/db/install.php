@@ -15,17 +15,22 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Plugin version and metadata for tool_guidance (graph chooser + suggestion engine).
+ * Install-time routine for the Guidance starter content subplugin.
  *
- * @package    tool_guidance
- * @copyright  2026 Lily Asshauer, bdecent gmbh <https://bdecent.de>
+ * @package    guidanceaddon_starter
+ * @copyright  2026 Lily Asshauer
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'tool_guidance';
-$plugin->version   = 2026070106;
-$plugin->requires  = 2025041400; // Moodle 5.0 or later (targeting 5.2).
-$plugin->maturity  = MATURITY_ALPHA;
-$plugin->release   = '0.2.0';
+/**
+ * Enable the addon and seed the bundled starter graph.
+ */
+function xmldb_guidanceaddon_starter_install() {
+    // Enable the addon by default so the chooser has content immediately.
+    set_config('enabled', 1, 'guidanceaddon_starter');
+
+    // Seed the bundled starter graph (idempotent — skips graphs already present).
+    \guidanceaddon_starter\local\graph_seeder::seed();
+}

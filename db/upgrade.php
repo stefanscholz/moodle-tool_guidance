@@ -114,11 +114,11 @@ function xmldb_tool_guidance_upgrade($oldversion) {
                     if (count($row) < 8) {
                         continue;
                     }
-                    [$sortorder, $enabled, $signal, $name, $condition, $suggest, $rationale, $preconfig] = $row;
+                    [$sortorder, $enabled, $signaltype, $name, $condition, $suggest, $rationale, $preconfig] = $row;
                     $DB->insert_record('tool_guidance_rule', (object) [
                         'sortorder' => (int) $sortorder,
                         'enabled' => (int) $enabled,
-                        'signal' => trim($signal),
+                        'signaltype' => trim($signaltype),
                         'name' => trim($name),
                         'conditiontext' => trim($condition),
                         'suggestmod' => trim($suggest),
@@ -133,6 +133,59 @@ function xmldb_tool_guidance_upgrade($oldversion) {
         }
 
         upgrade_plugin_savepoint(true, 2026070103, 'tool', 'guidance');
+    }
+
+    if ($oldversion < 2026070105) {
+        // "signal" is a reserved word in MySQL/MariaDB (used by SIGNAL/RESIGNAL in
+        // stored routines) and broke table creation on those engines. Rename it on
+        // any site where the table was already created (e.g. non-MySQL DBs where
+        // the previous step above succeeded).
+        $table = new xmldb_table('tool_guidance_rule');
+        $field = new xmldb_field('signal', XMLDB_TYPE_CHAR, '32', null, XMLDB_NOTNULL, null, null, 'enabled');
+        if ($dbman->table_exists($table) && $dbman->field_exists($table, $field)) {
+            $dbman->rename_field($table, $field, 'signaltype');
+        }
+        upgrade_plugin_savepoint(true, 2026070105, 'tool', 'guidance');
+    }
+
+    if ($oldversion < 2026070106) {
+        // Roots move from a single per-graph pointer (graph.rootnodeid) to a
+        // per-node flag (node.isroot), so a graph can have several roots. The one
+        // node the "Help me choose" chooser starts from is stored site-wide in
+        // config (tool_guidance/chooserentrynodeid).
+        $nodetable = new xmldb_table('tool_guidance_node');
+        $isroot = new xmldb_field('isroot', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'descriptionformat');
+        if (!$dbman->field_exists($nodetable, $isroot)) {
+            $dbman->add_field($nodetable, $isroot);
+        }
+        $index = new xmldb_index('graphid-isroot', XMLDB_INDEX_NOTUNIQUE, ['graphid', 'isroot']);
+        if (!$dbman->index_exists($nodetable, $index)) {
+            $dbman->add_index($nodetable, $index);
+        }
+
+        // Migrate existing per-graph roots into the new flag, and pick the site
+        // chooser entry (prefer an enabled graph's root, else any graph's root).
+        $graphtable = new xmldb_table('tool_guidance_graph');
+        $rootfield = new xmldb_field('rootnodeid');
+        if ($dbman->field_exists($graphtable, $rootfield)) {
+            $entrynodeid = 0;
+            $graphs = $DB->get_records_select('tool_guidance_graph', 'rootnodeid IS NOT NULL AND rootnodeid <> 0');
+            foreach ($graphs as $graph) {
+                $DB->set_field('tool_guidance_node', 'isroot', 1, ['id' => $graph->rootnodeid]);
+                if (!$entrynodeid || !empty($graph->enabled)) {
+                    $entrynodeid = (int) $graph->rootnodeid;
+                }
+            }
+            if ($entrynodeid && !get_config('tool_guidance', 'chooserentrynodeid')) {
+                set_config('chooserentrynodeid', $entrynodeid, 'tool_guidance');
+            }
+            $dbman->drop_field($graphtable, $rootfield);
+        }
+
+        // Every site needs one initial graph for the assignment chooser.
+        \tool_guidance\api::ensure_default_graph();
+
+        upgrade_plugin_savepoint(true, 2026070106, 'tool', 'guidance');
     }
 
     return true;

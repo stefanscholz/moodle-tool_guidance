@@ -35,7 +35,7 @@ class suggestion {
      * @param string $modname suggested activity module
      * @param string $name default activity name (from preconfig)
      * @param string $rationale teacher-facing reason
-     * @param string $signal gap|lifecycle|engagement
+     * @param string $signaltype gap|lifecycle|engagement
      * @param string $preconfig opaque preconfig payload for the add-activity flow
      */
     public function __construct(
@@ -43,7 +43,7 @@ class suggestion {
         public string $modname,
         public string $name,
         public string $rationale,
-        public string $signal,
+        public string $signaltype,
         public string $preconfig,
     ) {
     }
@@ -60,7 +60,7 @@ class suggestion {
             $rule->suggestmod,
             self::name_from_preconfig($rule->preconfig),
             $rule->rationale,
-            $rule->signal,
+            $rule->signaltype,
             $rule->preconfig,
         );
     }
@@ -92,7 +92,7 @@ class suggestion {
             'modname'   => $this->modname,
             'name'      => $this->name,
             'rationale' => $this->rationale,
-            'signal'    => $this->signal,
+            'signaltype' => $this->signaltype,
             'preconfig' => $this->preconfig,
         ];
     }
@@ -109,7 +109,7 @@ class suggestion {
             (string) $data['modname'],
             (string) $data['name'],
             (string) $data['rationale'],
-            (string) $data['signal'],
+            (string) $data['signaltype'],
             (string) $data['preconfig'],
         );
     }

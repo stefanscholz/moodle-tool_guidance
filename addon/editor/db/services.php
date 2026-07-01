@@ -90,7 +90,14 @@ $functions = [
     ],
     'guidanceaddon_editor_set_root' => [
         'classname' => 'guidanceaddon_editor\external\set_root',
-        'description' => 'Set the entry node of a graph.',
+        'description' => 'Flag or unflag a node as a root of its tree.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'tool/guidance:manage',
+    ],
+    'guidanceaddon_editor_set_chooser_entry' => [
+        'classname' => 'guidanceaddon_editor\external\set_chooser_entry',
+        'description' => 'Set the site-wide chooser entry node.',
         'type' => 'write',
         'ajax' => true,
         'capabilities' => 'tool/guidance:manage',

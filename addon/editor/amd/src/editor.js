@@ -50,7 +50,9 @@ const STRINGKEYS = [
     ['removeanswer', 'deleteanswer'],
     ['deletenode', 'deletenode'],
     ['setentry', 'setrootnode'],
-    ['entrybadge', 'isrootnode'],
+    ['unsetentry', 'unsetrootnode'],
+    ['rootbadge', 'isrootnode'],
+    ['chooserbadge', 'ischooserentry'],
     ['untitled', 'untitlednode'],
     ['confirmdeletenode', 'confirmdeletenodejs'],
     ['createhere', 'createnodehere'],
@@ -90,14 +92,21 @@ export const init = (graphid) => {
     answerlayer.className = 'tg-answer-layer';
     surface.insertBefore(answerlayer, nodelayer);
     const pan = {x: 0, y: 0};
+    const MINSCALE = 0.2;
+    const MAXSCALE = 2.5;
+    let scale = 1;
     const nodes = new Map();
     let mode = null;
     let drag = null;
     let tempedge = null;
     let popup = null;
+    // Edges must be redrawn whenever a card or answer box changes size (e.g. a
+    // textarea grows or the author drags a resize handle), not just on moves.
+    const resizeobserver = new ResizeObserver(() => redraw());
 
     /**
-     * Convert a client point to surface (content) coordinates.
+     * Convert a client point to surface (content) coordinates, accounting for
+     * the current pan and zoom.
      *
      * @param {Number} clientx
      * @param {Number} clienty
@@ -105,11 +114,11 @@ export const init = (graphid) => {
      */
     const toSurface = (clientx, clienty) => {
         const r = surface.getBoundingClientRect();
-        return {x: clientx - r.left, y: clienty - r.top};
+        return {x: (clientx - r.left) / scale, y: (clienty - r.top) / scale};
     };
 
     /**
-     * Centre of a port element in surface coordinates.
+     * Centre of a port element in surface (content) coordinates.
      *
      * @param {Element} port
      * @returns {Object} {x, y}
@@ -117,14 +126,291 @@ export const init = (graphid) => {
     const portCentre = (port) => {
         const sr = surface.getBoundingClientRect();
         const pr = port.getBoundingClientRect();
-        return {x: pr.left + pr.width / 2 - sr.left, y: pr.top + pr.height / 2 - sr.top};
+        return {
+            x: (pr.left + pr.width / 2 - sr.left) / scale,
+            y: (pr.top + pr.height / 2 - sr.top) / scale,
+        };
     };
 
     /**
-     * Apply the current pan offset to the surface.
+     * Apply the current pan offset and zoom to the surface.
      */
     const applyPan = () => {
-        surface.style.transform = 'translate(' + pan.x + 'px,' + pan.y + 'px)';
+        surface.style.transform = 'translate(' + pan.x + 'px,' + pan.y + 'px) scale(' + scale + ')';
+    };
+
+    /** Reflect the current zoom level on the reset button, if present. */
+    const updateZoomLabel = () => {
+        const label = root.querySelector('[data-action="zoom-reset"]');
+        if (label) {
+            label.textContent = Math.round(scale * 100) + '%';
+        }
+    };
+
+    /**
+     * Zoom to a new scale while keeping the content point under (clientx, clienty)
+     * fixed on screen.
+     *
+     * @param {Number} clientx
+     * @param {Number} clienty
+     * @param {Number} newscale
+     */
+    const zoomAt = (clientx, clienty, newscale) => {
+        newscale = Math.min(MAXSCALE, Math.max(MINSCALE, newscale));
+        const er = root.getBoundingClientRect();
+        const px = (clientx - er.left - pan.x) / scale;
+        const py = (clienty - er.top - pan.y) / scale;
+        pan.x = clientx - er.left - px * newscale;
+        pan.y = clienty - er.top - py * newscale;
+        scale = newscale;
+        applyPan();
+        redraw();
+        updateZoomLabel();
+    };
+
+    /** Zoom in/out around the centre of the editor viewport. */
+    const zoomCentre = (factor) => {
+        const er = root.getBoundingClientRect();
+        zoomAt(er.left + er.width / 2, er.top + er.height / 2, scale * factor);
+    };
+
+    /** Reset to 100% zoom at the origin. */
+    const resetView = () => {
+        scale = 1;
+        pan.x = 0;
+        pan.y = 0;
+        applyPan();
+        redraw();
+        updateZoomLabel();
+    };
+
+    /** Frame all nodes and answer boxes within the viewport. */
+    const fitView = () => {
+        let minx = Infinity;
+        let miny = Infinity;
+        let maxx = -Infinity;
+        let maxy = -Infinity;
+        let any = false;
+        const consider = (el, x, y) => {
+            minx = Math.min(minx, x);
+            miny = Math.min(miny, y);
+            maxx = Math.max(maxx, x + el.offsetWidth);
+            maxy = Math.max(maxy, y + el.offsetHeight);
+            any = true;
+        };
+        nodes.forEach((nd) => consider(nd.el, nd.posx, nd.posy));
+        nodes.forEach((nd) => nd.links.forEach((l) => consider(l.el, l.posx, l.posy)));
+        if (!any) {
+            return;
+        }
+        const er = root.getBoundingClientRect();
+        const pad = 40;
+        const bw = (maxx - minx) + pad * 2;
+        const bh = (maxy - miny) + pad * 2;
+        scale = Math.min(MAXSCALE, Math.max(MINSCALE, Math.min(er.width / bw, er.height / bh)));
+        pan.x = (er.width - (maxx - minx) * scale) / 2 - minx * scale;
+        pan.y = (er.height - (maxy - miny) * scale) / 2 - miny * scale;
+        applyPan();
+        redraw();
+        updateZoomLabel();
+    };
+
+    /**
+     * Arrange every node and answer box into a tidy top-to-bottom layered tree.
+     *
+     * Nodes are placed in layers by their breadth-first depth from the roots
+     * (deeper = further down); within a layer they are ordered by the average
+     * position of their parents to keep edges from crossing. Each answer box is
+     * dropped midway between its parent and child (or fanned out below the parent
+     * when it dangles). The graph is acyclic (the server forbids cycles), so the
+     * breadth-first walk always terminates.
+     *
+     * @param {Boolean} [persist] When true, save the new positions to the server.
+     */
+    const autoLayout = (persist) => {
+        if (!nodes.size) {
+            return;
+        }
+        // Breathing room around the answer-box row that sits in each layer gap,
+        // and between sibling columns. Generous on purpose: a roomy graph the
+        // author pans around beats a cramped one where boxes touch.
+        const VPAD = 110;
+        const HPAD = 220;
+
+        // Count incoming edges so we can fall back to "no parents" as the roots.
+        const incoming = new Map();
+        nodes.forEach((nd) => incoming.set(nd.id, 0));
+        nodes.forEach((nd) => nd.links.forEach((l) => {
+            if (l.childnodeid && incoming.has(l.childnodeid)) {
+                incoming.set(l.childnodeid, incoming.get(l.childnodeid) + 1);
+            }
+        }));
+        let roots = [];
+        nodes.forEach((nd) => {
+            if (nd.isroot) {
+                roots.push(nd);
+            }
+        });
+        if (!roots.length) {
+            nodes.forEach((nd) => {
+                if (incoming.get(nd.id) === 0) {
+                    roots.push(nd);
+                }
+            });
+        }
+        if (!roots.length) {
+            roots = [nodes.values().next().value];
+        }
+
+        // Breadth-first depth from the roots.
+        const level = new Map();
+        const queue = [];
+        roots.forEach((r) => {
+            if (!level.has(r.id)) {
+                level.set(r.id, 0);
+                queue.push(r);
+            }
+        });
+        while (queue.length) {
+            const nd = queue.shift();
+            const d = level.get(nd.id);
+            nd.links.forEach((l) => {
+                const c = l.childnodeid ? nodes.get(l.childnodeid) : null;
+                if (c && !level.has(c.id)) {
+                    level.set(c.id, d + 1);
+                    queue.push(c);
+                }
+            });
+        }
+        // Anything unreachable from a root lands one layer below the deepest.
+        let maxlevel = 0;
+        level.forEach((d) => {
+            maxlevel = Math.max(maxlevel, d);
+        });
+        nodes.forEach((nd) => {
+            if (!level.has(nd.id)) {
+                level.set(nd.id, maxlevel + 1);
+            }
+        });
+
+        // Bucket nodes per layer.
+        const byLevel = new Map();
+        nodes.forEach((nd) => {
+            const d = level.get(nd.id);
+            if (!byLevel.has(d)) {
+                byLevel.set(d, []);
+            }
+            byLevel.get(d).push(nd);
+        });
+        const layers = [...byLevel.keys()].sort((a, b) => a - b);
+        let widest = 0;
+        byLevel.forEach((arr) => {
+            widest = Math.max(widest, arr.length);
+        });
+
+        // Column pitch follows the widest card so tall/short cards never touch
+        // horizontally; answer boxes (narrower) always fit inside the gap.
+        let maxnodew = 0;
+        nodes.forEach((nd) => {
+            maxnodew = Math.max(maxnodew, nd.el.offsetWidth);
+        });
+        const colpitch = maxnodew + HPAD;
+
+        // Vertical pitch is measured per layer: the gap below a layer must clear
+        // its tallest card, then the tallest answer box entering the next layer,
+        // plus padding on each side. Fixed gaps ignored that and caused overlap.
+        const layernodeh = new Map();
+        layers.forEach((d) => {
+            let h = 0;
+            byLevel.get(d).forEach((nd) => {
+                h = Math.max(h, nd.el.offsetHeight);
+            });
+            layernodeh.set(d, h || 120);
+        });
+        const answerrowh = new Map();
+        layers.forEach((d) => answerrowh.set(d, 0));
+        nodes.forEach((nd) => nd.links.forEach((l) => {
+            const c = l.childnodeid ? nodes.get(l.childnodeid) : null;
+            if (c && level.has(c.id)) {
+                const d = level.get(c.id);
+                answerrowh.set(d, Math.max(answerrowh.get(d) || 0, l.el.offsetHeight || 60));
+            }
+        }));
+        const layery = new Map();
+        let cursory = 60;
+        layers.forEach((d, li) => {
+            if (li > 0) {
+                cursory += layernodeh.get(layers[li - 1]) + VPAD + (answerrowh.get(d) || 60) + VPAD;
+            }
+            layery.set(d, cursory);
+        });
+
+        // Order each layer by the mean order of its parents, then place it.
+        const order = new Map();
+        layers.forEach((d, li) => {
+            const arr = byLevel.get(d);
+            if (li > 0) {
+                const bary = new Map();
+                arr.forEach((nd) => {
+                    let sum = 0;
+                    let cnt = 0;
+                    nodes.forEach((p) => p.links.forEach((l) => {
+                        if (l.childnodeid === nd.id && order.has(p.id)) {
+                            sum += order.get(p.id);
+                            cnt++;
+                        }
+                    }));
+                    bary.set(nd.id, cnt ? sum / cnt : Number.MAX_SAFE_INTEGER);
+                });
+                arr.sort((a, b) => bary.get(a.id) - bary.get(b.id));
+            }
+            const offset = (widest - arr.length) / 2 * colpitch;
+            arr.forEach((nd, i) => {
+                order.set(nd.id, i);
+                // Centre each card within its column so uneven widths stay aligned.
+                nd.posx = 60 + offset + i * colpitch + (maxnodew - nd.el.offsetWidth) / 2;
+                nd.posy = layery.get(d);
+                nd.el.style.left = nd.posx + 'px';
+                nd.el.style.top = nd.posy + 'px';
+            });
+        });
+
+        // Drop each answer box between its parent and child (or below, dangling).
+        nodes.forEach((nd) => {
+            const pcx = nd.posx + nd.el.offsetWidth / 2;
+            const pbottom = nd.posy + nd.el.offsetHeight;
+            nd.links.forEach((l, i) => {
+                const aw = l.el.offsetWidth || 190;
+                const ah = l.el.offsetHeight || 60;
+                const child = l.childnodeid ? nodes.get(l.childnodeid) : null;
+                if (child) {
+                    const ccx = child.posx + child.el.offsetWidth / 2;
+                    l.posx = (pcx + ccx) / 2 - aw / 2;
+                    l.posy = (pbottom + child.posy) / 2 - ah / 2;
+                } else {
+                    l.posx = pcx - aw / 2 + (i - (nd.links.length - 1) / 2) * (aw + 30);
+                    l.posy = pbottom + VPAD;
+                }
+                l.el.style.left = l.posx + 'px';
+                l.el.style.top = l.posy + 'px';
+            });
+        });
+
+        if (persist) {
+            nodes.forEach((nd) => {
+                if (nd.id) {
+                    call('move_node', {id: nd.id, posx: nd.posx, posy: nd.posy}).catch(Notification.exception);
+                }
+                nd.links.forEach((l) => {
+                    if (l.linkid) {
+                        call('move_answer', {id: l.linkid, posx: l.posx, posy: l.posy}).catch(Notification.exception);
+                    }
+                });
+            });
+        }
+
+        redraw();
+        fitView();
     };
 
     /**
@@ -322,7 +608,7 @@ export const init = (graphid) => {
         // question so they do not all pile up at the origin.
         if (!link.posx && !link.posy) {
             link.posx = nd.posx + 40;
-            link.posy = nd.posy + 130 + nd.links.length * 70;
+            link.posy = nd.posy + 130 + nd.links.length * 95;
         }
 
         const box = document.createElement('div');
@@ -333,13 +619,20 @@ export const init = (graphid) => {
         const input = document.createElement('span');
         input.className = 'tg-answer-input';
 
-        const label = document.createElement('input');
-        label.type = 'text';
+        // A growing textarea (not a single-line input) so long answers stay
+        // readable; the resize observer keeps the edge lines in sync.
+        const label = document.createElement('textarea');
         label.className = 'form-control form-control-sm tg-answer-label';
+        label.rows = 1;
         label.placeholder = s.answerlabel;
         label.value = link.label;
+        const autogrow = () => {
+            label.style.height = 'auto';
+            label.style.height = label.scrollHeight + 'px';
+        };
         label.addEventListener('mousedown', (e) => e.stopPropagation());
         label.addEventListener('input', () => {
+            autogrow();
             link.label = label.value;
             if (link.linkid) {
                 call('update_link', {id: link.linkid, answerlabel: link.label}).catch(Notification.exception);
@@ -357,6 +650,7 @@ export const init = (graphid) => {
                 call('delete_link', {id: link.linkid}).catch(Notification.exception);
             }
             nd.links = nd.links.filter((l) => l !== link);
+            resizeobserver.unobserve(box);
             box.remove();
             redraw();
         });
@@ -373,6 +667,8 @@ export const init = (graphid) => {
         link.input = input;
         link.outport = outport;
         answerlayer.appendChild(box);
+        autogrow();
+        resizeobserver.observe(box);
         nd.links.push(link);
     };
 
@@ -397,17 +693,30 @@ export const init = (graphid) => {
         const type = document.createElement('span');
         type.className = 'tg-node-type';
         type.textContent = nd.type === 'leaf' ? s.typeleaf : s.typequestion;
-        const entry = document.createElement('span');
-        entry.className = 'tg-node-entry-badge';
-        entry.textContent = s.entrybadge;
+        const rootbadge = document.createElement('span');
+        rootbadge.className = 'tg-node-root-badge';
+        rootbadge.textContent = s.rootbadge;
+        const chooserbadge = document.createElement('span');
+        chooserbadge.className = 'tg-node-chooser-badge';
+        chooserbadge.textContent = s.chooserbadge;
+        // A star toggles this node's root flag; a graph may have several roots.
         const star = document.createElement('button');
         star.type = 'button';
         star.className = 'btn btn-sm btn-link tg-node-setentry';
         star.textContent = '★';
-        star.title = s.setentry;
+        star.title = nd.isroot ? s.unsetentry : s.setentry;
         star.addEventListener('click', () => {
-            call('set_root', {graphid: graphid, nodeid: nd.id})
-                .then(() => window.location.reload()).catch(Notification.exception);
+            const next = !nd.isroot;
+            call('set_root', {graphid: graphid, nodeid: nd.id, isroot: next}).then(() => {
+                nd.isroot = next;
+                nd.el.classList.toggle('tg-node-root', next);
+                star.title = next ? s.unsetentry : s.setentry;
+                if (!next) {
+                    // A node that is no longer a root cannot be the chooser entry.
+                    nd.el.classList.remove('tg-node-entry');
+                }
+                return null;
+            }).catch(Notification.exception);
         });
         const del = document.createElement('button');
         del.type = 'button';
@@ -415,7 +724,7 @@ export const init = (graphid) => {
         del.textContent = '×';
         del.title = s.deletenode;
         del.addEventListener('click', () => deleteNode(nd));
-        header.append(type, star, entry, del);
+        header.append(type, star, rootbadge, chooserbadge, del);
         header.addEventListener('mousedown', (e) => startNodeDrag(e, nd));
 
         const body = document.createElement('div');
@@ -477,6 +786,10 @@ export const init = (graphid) => {
             card.appendChild(outport);
         }
         nodelayer.appendChild(card);
+        resizeobserver.observe(card);
+        if (nd.isroot) {
+            card.classList.add('tg-node-root');
+        }
         if (nd.type === 'leaf') {
             renderTargetConfig(nd);
         }
@@ -493,10 +806,14 @@ export const init = (graphid) => {
             return;
         }
         call('delete_node', {id: nd.id}).then(() => {
+            resizeobserver.unobserve(nd.el);
             nd.el.remove();
             nodes.delete(nd.id);
             // This node's own answers go with it.
-            nd.links.forEach((l) => l.el.remove());
+            nd.links.forEach((l) => {
+                resizeobserver.unobserve(l.el);
+                l.el.remove();
+            });
             // Answers from other questions that pointed here become dangling
             // (the server already detached them).
             nodes.forEach((other) => {
@@ -580,7 +897,7 @@ export const init = (graphid) => {
      * @param {MouseEvent} e
      */
     const startPan = (e) => {
-        if (e.target.closest('.tg-create-popup')) {
+        if (e.target.closest('.tg-create-popup') || e.target.closest('.tool-guidance-toolbar')) {
             return;
         }
         closePopup();
@@ -598,14 +915,15 @@ export const init = (graphid) => {
      */
     const onMove = (e) => {
         if (mode === 'node') {
-            drag.nd.posx = drag.origx + (e.clientX - drag.startx);
-            drag.nd.posy = drag.origy + (e.clientY - drag.starty);
+            // Mouse deltas are in screen pixels; convert to content pixels.
+            drag.nd.posx = drag.origx + (e.clientX - drag.startx) / scale;
+            drag.nd.posy = drag.origy + (e.clientY - drag.starty) / scale;
             drag.nd.el.style.left = drag.nd.posx + 'px';
             drag.nd.el.style.top = drag.nd.posy + 'px';
             redraw();
         } else if (mode === 'answer') {
-            drag.link.posx = drag.origx + (e.clientX - drag.startx);
-            drag.link.posy = drag.origy + (e.clientY - drag.starty);
+            drag.link.posx = drag.origx + (e.clientX - drag.startx) / scale;
+            drag.link.posy = drag.origy + (e.clientY - drag.starty) / scale;
             drag.link.el.style.left = drag.link.posx + 'px';
             drag.link.el.style.top = drag.link.posy + 'px';
             redraw();
@@ -814,11 +1132,14 @@ export const init = (graphid) => {
         // the option the UI pre-selects; other types need author input first.
         const config = (targettype === 'activity' && activitymods.length)
             ? {modname: activitymods[0].value} : {};
+        // The server marks the first node of a graph as a root automatically;
+        // mirror that here so the badge shows without a reload.
         const nd = {
             id: 0, type: type, title: '', description: '',
             targettype: targettype, targetconfig: config,
-            posx: pos ? pos.x : 60 - pan.x + Math.random() * 80,
-            posy: pos ? pos.y : 60 - pan.y + Math.random() * 80,
+            isroot: nodes.size === 0,
+            posx: pos ? pos.x : (60 - pan.x) / scale + Math.random() * 80,
+            posy: pos ? pos.y : (60 - pan.y) / scale + Math.random() * 80,
             links: []
         };
         return call('save_node', {
@@ -857,11 +1178,14 @@ export const init = (graphid) => {
                 id: n.id, type: n.type, title: n.title, description: n.description,
                 targettype: n.targettype || (n.type === 'leaf' ? targettypes[0].value : ''),
                 targetconfig: n.targetconfig ? JSON.parse(n.targetconfig) : {},
+                isroot: !!n.isroot,
                 posx: n.posx, posy: n.posy, links: []
             };
             nodes.set(nd.id, nd);
             buildCard(nd);
-            if (n.id === data.rootnodeid) {
+            // The one root the "Help me choose" chooser starts from, if it lives
+            // in this graph, is highlighted as the entry.
+            if (n.id === data.chooserentrynodeid) {
                 nd.el.classList.add('tg-node-entry');
             }
         });
@@ -875,13 +1199,56 @@ export const init = (graphid) => {
             }
         });
         redraw();
+        // Bundled starter templates (e.g. the activity chooser) carry only rough
+        // seed positions and no answer-box placement, so tidy them on view.
+        // Positions are not persisted here: the layout is deterministic, so an
+        // author who rearranges the graph by hand keeps their own arrangement.
+        if (data.autolayout) {
+            autoLayout(false);
+        }
     };
 
-    document.querySelector('[data-action="add-question"]').addEventListener('click', () => addNode('question'));
-    document.querySelector('[data-action="add-leaf"]').addEventListener('click', () => addNode('leaf'));
+    /**
+     * Wire a toolbar action button by its data-action, if present.
+     *
+     * @param {String} action
+     * @param {Function} handler
+     */
+    const onAction = (action, handler) => {
+        const btn = document.querySelector('[data-action="' + action + '"]');
+        if (btn) {
+            btn.addEventListener('click', handler);
+        }
+    };
+
+    onAction('add-question', () => addNode('question'));
+    onAction('add-leaf', () => addNode('leaf'));
+    onAction('zoom-in', () => zoomCentre(1.2));
+    onAction('zoom-out', () => zoomCentre(1 / 1.2));
+    onAction('zoom-reset', () => resetView());
+    onAction('zoom-fit', () => fitView());
+    onAction('auto-layout', () => autoLayout(true));
     root.addEventListener('mousedown', startPan);
     document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup', onUp);
+
+    // Wheel zooms toward the cursor. A gentle step keeps trackpads (which fire
+    // many wheel events per gesture) from lurching between zoom levels.
+    const WHEELSTEP = 1.04;
+    root.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        zoomAt(e.clientX, e.clientY, scale * (e.deltaY < 0 ? WHEELSTEP : 1 / WHEELSTEP));
+    }, {passive: false});
+
+    // Double-clicking empty canvas offers to create a question or recommendation
+    // right there.
+    root.addEventListener('dblclick', (e) => {
+        if (e.target.closest('.tg-node') || e.target.closest('.tg-answer-node')
+            || e.target.closest('.tg-create-popup')) {
+            return;
+        }
+        showCreatePopup(e.clientX, e.clientY, () => {});
+    });
 
     applyPan();
     getStrings(STRINGKEYS.map(([, key]) => ({key: key, component: 'tool_guidance'})))

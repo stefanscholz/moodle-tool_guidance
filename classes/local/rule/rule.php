@@ -29,7 +29,7 @@ class rule {
      * @param int $id
      * @param int $sortorder precedence; lower wins
      * @param bool $enabled
-     * @param string $signal gap|lifecycle|engagement
+     * @param string $signaltype gap|lifecycle|engagement
      * @param string $name
      * @param string $conditiontext condition DSL
      * @param string $suggestmod suggested activity module name
@@ -40,7 +40,7 @@ class rule {
         public int $id,
         public int $sortorder,
         public bool $enabled,
-        public string $signal,
+        public string $signaltype,
         public string $name,
         public string $conditiontext,
         public string $suggestmod,
@@ -60,7 +60,7 @@ class rule {
             (int) $record->id,
             (int) $record->sortorder,
             (bool) $record->enabled,
-            (string) $record->signal,
+            (string) $record->signaltype,
             (string) $record->name,
             (string) $record->conditiontext,
             (string) $record->suggestmod,
@@ -81,7 +81,7 @@ class rule {
         }
         $record->sortorder = $this->sortorder;
         $record->enabled = (int) $this->enabled;
-        $record->signal = $this->signal;
+        $record->signaltype = $this->signaltype;
         $record->name = $this->name;
         $record->conditiontext = $this->conditiontext;
         $record->suggestmod = $this->suggestmod;

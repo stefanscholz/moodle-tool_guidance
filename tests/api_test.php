@@ -210,21 +210,46 @@ final class api_test extends \advanced_testcase {
         $this->assertNull($DB->get_field('tool_guidance_link', 'childnodeid', ['id' => $link->get('id')]));
     }
 
-    public function test_delete_node_clears_links_and_root(): void {
+    public function test_delete_node_clears_links_and_chooser_entry(): void {
         global $DB;
         $this->resetAfterTest();
         $graph = $this->make_graph();
         $q1 = $this->make_question($graph->get('id'), 'Q1');
         $q2 = $this->make_question($graph->get('id'), 'Q2');
         $this->make_link($graph->get('id'), $q1->get('id'), $q2->get('id'));
-        $graph->set('rootnodeid', $q1->get('id'));
-        $graph->update();
+        api::set_chooser_entry($q1->get('id'));
+        $this->assertEquals($q1->get('id'), api::get_chooser_entry_node()->get('id'));
 
         api::delete_node($q1);
 
         $this->assertFalse($DB->record_exists('tool_guidance_node', ['id' => $q1->get('id')]));
         $this->assertEquals(0, $DB->count_records('tool_guidance_link', ['graphid' => $graph->get('id')]));
-        $graph->read();
-        $this->assertEmpty($graph->get('rootnodeid'));
+        $this->assertNull(api::get_chooser_entry_node());
+    }
+
+    public function test_set_chooser_entry_flags_node_as_root(): void {
+        $this->resetAfterTest();
+        $graph = $this->make_graph();
+        $q1 = $this->make_question($graph->get('id'), 'Q1');
+        $this->assertFalse($q1->get('isroot'));
+
+        api::set_chooser_entry($q1->get('id'));
+
+        $q1->read();
+        $this->assertTrue((bool) $q1->get('isroot'));
+        $this->assertEquals($q1->get('id'), api::get_chooser_entry_node()->get('id'));
+    }
+
+    public function test_ensure_default_graph_is_idempotent(): void {
+        $this->resetAfterTest();
+        api::ensure_default_graph();
+        $this->assertEquals(1, graph::count_records());
+        $entry = api::get_chooser_entry_node();
+        $this->assertNotNull($entry);
+        $this->assertTrue((bool) $entry->get('isroot'));
+
+        // A second call with a graph already present does nothing.
+        api::ensure_default_graph();
+        $this->assertEquals(1, graph::count_records());
     }
 }

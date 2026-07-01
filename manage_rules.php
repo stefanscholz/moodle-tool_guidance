@@ -136,7 +136,7 @@ foreach ($rules as $index => $rule) {
     $table->data[] = [
         $rule->sortorder,
         format_string($rule->name),
-        $signalnames[$rule->signal] ?? $rule->signal,
+        $signalnames[$rule->signaltype] ?? $rule->signaltype,
         html_writer::tag('code', s($rule->conditiontext)),
         s($rule->suggestmod),
         $rule->enabled ? get_string('yes') : get_string('no'),

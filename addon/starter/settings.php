@@ -15,17 +15,26 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Plugin version and metadata for tool_guidance (graph chooser + suggestion engine).
+ * Admin settings for the Guidance starter content subplugin.
  *
- * @package    tool_guidance
- * @copyright  2026 Lily Asshauer, bdecent gmbh <https://bdecent.de>
+ * @package    guidanceaddon_starter
+ * @copyright  2026 Lily Asshauer
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'tool_guidance';
-$plugin->version   = 2026070106;
-$plugin->requires  = 2025041400; // Moodle 5.0 or later (targeting 5.2).
-$plugin->maturity  = MATURITY_ALPHA;
-$plugin->release   = '0.2.0';
+if ($hassiteconfig) {
+    // Settings page: enable/disable toggle.
+    $settings = new admin_settingpage(
+        'guidanceaddon_starter',
+        get_string('pluginname', 'guidanceaddon_starter')
+    );
+    $settings->add(new admin_setting_configcheckbox(
+        'guidanceaddon_starter/enabled',
+        get_string('enabled', 'guidanceaddon_starter'),
+        get_string('enabled_desc', 'guidanceaddon_starter'),
+        1
+    ));
+    $ADMIN->add('tools', $settings);
+}

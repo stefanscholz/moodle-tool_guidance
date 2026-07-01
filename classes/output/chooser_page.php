@@ -43,8 +43,8 @@ class chooser_page implements renderable, templatable {
     /** @var node The active node. */
     protected $node;
 
-    /** @var int Section number the chooser was launched from. */
-    protected $sectionnum;
+    /** @var int Id of the graph's chooser entry node. */
+    protected $entrynodeid;
 
     /**
      * Constructor.
@@ -52,13 +52,13 @@ class chooser_page implements renderable, templatable {
      * @param \stdClass $course Course record.
      * @param graph $graph The graph being traversed.
      * @param node $node The active node.
-     * @param int $sectionnum Section number the activity should be created in.
+     * @param int $entrynodeid Id of the chooser entry node (the start of the flow).
      */
-    public function __construct(\stdClass $course, graph $graph, node $node, int $sectionnum = 0) {
+    public function __construct(\stdClass $course, graph $graph, node $node, int $entrynodeid) {
         $this->course = $course;
         $this->graph = $graph;
         $this->node = $node;
-        $this->sectionnum = $sectionnum;
+        $this->entrynodeid = $entrynodeid;
     }
 
     /**
@@ -78,7 +78,7 @@ class chooser_page implements renderable, templatable {
         return [
             'title' => get_string('choosertitle', 'tool_guidance'),
             'intro' => get_string('chooserintro', 'tool_guidance'),
-            'isstart' => (int) $this->node->get('id') === (int) $this->graph->get('rootnodeid'),
+            'isstart' => (int) $this->node->get('id') === $this->entrynodeid,
             'starturl' => $starturl->out(false),
             'startoverlabel' => get_string('startover', 'tool_guidance'),
             'node' => $nodeexporter->export($output),

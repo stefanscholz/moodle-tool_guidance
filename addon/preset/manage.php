@@ -167,7 +167,11 @@ if ($action === 'create' || $action === 'edit') {
 
 // Default: list view.
 $createurl = new moodle_url($pageurl, ['action' => 'create']);
-$PAGE->set_button($OUTPUT->single_button($createurl, get_string('createpreset', 'guidanceaddon_preset'), 'get'));
+$fromactivityurl = new moodle_url('/admin/tool/guidance/addon/preset/create_from_activity.php');
+$PAGE->set_button(
+    $OUTPUT->single_button($createurl, get_string('createpreset', 'guidanceaddon_preset'), 'get') .
+    $OUTPUT->single_button($fromactivityurl, get_string('createfromactivity', 'guidanceaddon_preset'), 'get')
+);
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('presetlist', 'guidanceaddon_preset'));

@@ -26,6 +26,7 @@ require(__DIR__ . '/../../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 
 use tool_guidance\form\rule_form;
+use tool_guidance\local\condition\parser;
 use tool_guidance\local\rule\rule;
 use tool_guidance\local\rule\rule_repository;
 
@@ -50,7 +51,7 @@ if ($existing) {
         'name'          => $existing->name,
         'signal'        => $existing->signal,
         'suggestmod'    => $existing->suggestmod,
-        'conditiontext' => $existing->conditiontext,
+        'conditionclauses' => json_encode(parser::parse($existing->conditiontext)),
         'rationale'     => $existing->rationale,
         'preconfig'     => $existing->preconfig,
         'sortorder'     => $existing->sortorder,
@@ -65,13 +66,14 @@ if ($form->is_cancelled()) {
     if (!$sortorder) {
         $sortorder = $repository->next_sortorder();
     }
+    $conditiontext = rule_form::compile_clauses($data->conditionclauses ?? '[]');
     $rule = new rule(
         (int) $data->id,
         (int) $sortorder,
         (bool) $data->enabled,
         $data->signal,
         $data->name,
-        $data->conditiontext,
+        $conditiontext,
         $data->suggestmod,
         $data->rationale,
         $data->preconfig ?? '',

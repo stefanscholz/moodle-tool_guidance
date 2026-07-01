@@ -91,4 +91,157 @@ class fact_catalogue {
         }
         return array_key_exists($key, self::scalar_facts());
     }
+
+    /**
+     * Ordered fact groups: group key => human label.
+     *
+     * @return array<string, string>
+     */
+    public static function groups(): array {
+        return [
+            'purpose'     => get_string('factgroup_purpose', 'tool_guidance'),
+            'structure'   => get_string('factgroup_structure', 'tool_guidance'),
+            'settings'    => get_string('factgroup_settings', 'tool_guidance'),
+            'lifecycle'   => get_string('factgroup_lifecycle', 'tool_guidance'),
+            'engagement'  => get_string('factgroup_engagement', 'tool_guidance'),
+            'modulecount' => get_string('factgroup_modulecount', 'tool_guidance'),
+        ];
+    }
+
+    /**
+     * Which group each scalar fact belongs to.
+     *
+     * @return array<string, string> fact key => group key
+     */
+    private static function fact_group_map(): array {
+        return [
+            'has_purpose_assessment' => 'purpose', 'has_purpose_communication' => 'purpose',
+            'has_purpose_collaboration' => 'purpose', 'has_purpose_content' => 'purpose',
+            'has_purpose_interactivecontent' => 'purpose', 'has_feedback_activity' => 'purpose',
+            'activity_count' => 'structure', 'resource_count' => 'structure', 'interactive_count' => 'structure',
+            'assessment_count' => 'structure', 'distinct_module_types' => 'structure', 'section_count' => 'structure',
+            'empty_section_count' => 'structure', 'graded_items_count' => 'structure', 'completion_tracked_count' => 'structure',
+            'enablecompletion' => 'settings', 'has_groups' => 'settings', 'groupmode' => 'settings', 'format' => 'settings',
+            'term_stage' => 'lifecycle', 'course_age_days' => 'lifecycle', 'is_empty_shell' => 'lifecycle',
+            'enrolled_students' => 'lifecycle',
+            'dead_activity_count' => 'engagement', 'recent_events_7d' => 'engagement', 'active_students_7d' => 'engagement',
+            'completion_rate' => 'engagement', 'forum_post_count' => 'engagement', 'quiz_attempt_count' => 'engagement',
+            'assignment_submission_rate' => 'engagement',
+        ];
+    }
+
+    /**
+     * Human labels for scalar facts.
+     *
+     * @return array<string, string> fact key => label
+     */
+    private static function fact_labels(): array {
+        return [
+            'has_purpose_assessment' => 'Has an assessment activity',
+            'has_purpose_communication' => 'Has a communication activity',
+            'has_purpose_collaboration' => 'Has a collaboration activity',
+            'has_purpose_content' => 'Has content/resources',
+            'has_purpose_interactivecontent' => 'Has interactive content',
+            'has_feedback_activity' => 'Has a feedback/choice/survey',
+            'enablecompletion' => 'Completion tracking is on',
+            'is_empty_shell' => 'Is an (almost) empty course',
+            'has_groups' => 'Uses groups',
+            'activity_count' => 'Number of activities',
+            'resource_count' => 'Number of passive resources',
+            'interactive_count' => 'Number of interactive activities',
+            'assessment_count' => 'Number of assessment activities',
+            'section_count' => 'Number of sections',
+            'empty_section_count' => 'Number of empty sections',
+            'distinct_module_types' => 'Distinct activity types used',
+            'graded_items_count' => 'Number of graded items',
+            'completion_tracked_count' => 'Activities with completion tracked',
+            'course_age_days' => 'Course age (days)',
+            'enrolled_students' => 'Enrolled students',
+            'dead_activity_count' => 'Activities never viewed',
+            'recent_events_7d' => 'Events in the last 7 days',
+            'active_students_7d' => 'Active students (7 days)',
+            'completion_rate' => 'Completion rate (%)',
+            'forum_post_count' => 'Forum posts',
+            'quiz_attempt_count' => 'Quiz attempts',
+            'assignment_submission_rate' => 'Assignment submission rate (%)',
+            'term_stage' => 'Stage in the term',
+            'groupmode' => 'Group mode',
+            'format' => 'Course format',
+        ];
+    }
+
+    /**
+     * Operators offered for a fact type.
+     *
+     * @param string $type bool|int|float|enum
+     * @return array<int, string>
+     */
+    public static function operators_for_type(string $type): array {
+        return match ($type) {
+            'bool' => ['==', '!='],
+            'enum' => ['==', '!=', 'in'],
+            default => ['==', '!=', '<', '<=', '>', '>='], // int/float
+        };
+    }
+
+    /**
+     * Allowed values for an enum fact ([] for non-enums). Some are runtime.
+     *
+     * @param string $key
+     * @return array<int, string>
+     */
+    public static function enum_values(string $key): array {
+        switch ($key) {
+            case 'term_stage':
+                return ['prestart', 'week1', 'early', 'mid', 'late', 'postend', 'undated'];
+            case 'groupmode':
+                return ['none', 'separate', 'visible'];
+            case 'format':
+                return array_values(\core\plugin_manager::instance()->get_enabled_plugins('format') ?: []);
+            default:
+                return [];
+        }
+    }
+
+    /**
+     * The full fact metadata for the builder UI, grouped and enriched with the
+     * runtime module-count facts.
+     *
+     * @return array{groups: array<int, array{key: string, label: string, facts: array}>}
+     */
+    public static function for_form(): array {
+        $types = self::scalar_facts();
+        $groupmap = self::fact_group_map();
+        $labels = self::fact_labels();
+
+        $groups = [];
+        foreach (self::groups() as $gkey => $glabel) {
+            $groups[$gkey] = ['key' => $gkey, 'label' => $glabel, 'facts' => []];
+        }
+
+        foreach ($types as $key => $type) {
+            if (!isset($groupmap[$key])) {
+                throw new \coding_exception("fact_group_map() is missing a group for fact: $key");
+            }
+            $groups[$groupmap[$key]]['facts'][] = [
+                'key' => $key,
+                'label' => $labels[$key] ?? $key,
+                'type' => $type,
+                'operators' => self::operators_for_type($type),
+                'values' => self::enum_values($key),
+            ];
+        }
+
+        foreach (\core\plugin_manager::instance()->get_enabled_plugins('mod') as $modname) {
+            $groups['modulecount']['facts'][] = [
+                'key' => self::MODULE_COUNT_PREFIX . $modname,
+                'label' => get_string('pluginname', 'mod_' . $modname),
+                'type' => 'int',
+                'operators' => self::operators_for_type('int'),
+                'values' => [],
+            ];
+        }
+
+        return ['groups' => array_values($groups)];
+    }
 }

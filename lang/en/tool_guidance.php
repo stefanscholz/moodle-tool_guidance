@@ -282,3 +282,37 @@ $string['privacy:metadata:dismissed:timecreated'] = 'When the suggestion was dis
 // Subplugin type display names.
 $string['subplugintype_guidanceaddon'] = 'Guidance addon';
 $string['subplugintype_guidanceaddon_plural'] = 'Guidance addons';
+
+// ---------------------------------------------------------------------------
+// Rule-form field help + graphical condition builder.
+// ---------------------------------------------------------------------------
+$string['rule_name_help'] = 'A short internal name for this rule, shown only in this admin list to help you identify it. Teachers never see it — they see the rationale instead.';
+$string['rule_signal_help'] = 'Which kind of signal this rule responds to. This is used only for grouping and reporting; it does not affect how the rule is evaluated. Pedagogical gap = a missing activity purpose (for example, no assessment); Lifecycle/timing = where the course is in its term; Engagement/health = how students are participating.';
+$string['rule_suggest_help'] = 'The activity the teacher is prompted to add when this rule matches. Only activity modules that are installed and enabled on the site are listed, and a rule is skipped automatically if its activity is later removed or disabled.';
+$string['rule_rationale_help'] = 'The one- or two-sentence explanation shown to the teacher in the Guidance block, telling them why this activity is suggested. Write it in plain, friendly language addressed to the teacher, for example: "Your course has readings but no way to check understanding — a short quiz closes that loop."';
+$string['rule_enabled_help'] = 'Whether this rule is active. Disabled rules are kept but never evaluated, so you can retire a rule without deleting it.';
+$string['rule_sortorder_help'] = 'The precedence of this rule. Rules are evaluated from the lowest order number upwards, and the first one that matches — whose activity is available and not currently dismissed — becomes the suggestion shown, so lower numbers win. Leave blank when adding a rule to place it last; you can reorder afterwards with the up and down arrows on the manage screen.';
+$string['availablefacts_help'] = 'The facts a condition can reference. Each names something measured about the course: booleans such as <code>has_purpose_assessment</code> are true or false; counts such as <code>activity_count</code> or <code>graded_items_count</code> are whole numbers; <code>term_stage</code> is one of prestart, week1, early, mid, late, postend or undated. Use <code>module_count.&lt;modname&gt;</code> for the number of a specific activity type, for example <code>module_count.quiz</code>.';
+$string['factgroup_purpose'] = 'Pedagogical purpose';
+$string['factgroup_structure'] = 'Structure & content';
+$string['factgroup_settings'] = 'Course settings';
+$string['factgroup_lifecycle'] = 'Lifecycle & size';
+$string['factgroup_engagement'] = 'Engagement';
+$string['factgroup_modulecount'] = 'Activity counts by type';
+$string['condition_allof'] = 'Suggest this activity when all of these are true:';
+$string['condition_addclause'] = 'Add condition';
+$string['condition_removeclause'] = 'Remove this condition';
+$string['condition_matchesall'] = 'No conditions — this rule matches every course.';
+$string['condition_valuetype_literal'] = 'a value';
+$string['condition_valuetype_fact'] = 'another fact';
+$string['condition_yes'] = 'Yes';
+$string['condition_no'] = 'No';
+$string['condition_incomplete'] = 'Every condition needs a fact, an operator and a value.';
+$string['conditionincomplete'] = 'Every condition needs a fact, an operator and a value.';
+$string['op_eq'] = 'is';
+$string['op_neq'] = 'is not';
+$string['op_lt'] = 'is less than';
+$string['op_lte'] = 'is at most';
+$string['op_gt'] = 'is more than';
+$string['op_gte'] = 'is at least';
+$string['op_in'] = 'is one of';

@@ -19,11 +19,10 @@ namespace tool_guidance\local\condition;
 use tool_guidance\local\profile\course_profile;
 
 /**
- * Parser and evaluator for the deterministic rule condition DSL.
+ * Evaluator for the deterministic rule condition DSL.
  *
- * Grammar: clauses joined by " AND "; each clause is `fact OP operand`.
- * Operators: == != <= >= < > in. An operand is a literal (true/false/number/enum word),
- * a fact reference (any catalogue fact name), or for `in` a set `(a|b|c)`.
+ * Grammar is owned by {@see parser}. This class consumes the structured clause
+ * arrays it produces and evaluates them against a course profile.
  *
  * @package    tool_guidance
  * @copyright  2026 bdecent gmbh <https://bdecent.de>
@@ -42,7 +41,7 @@ class evaluator {
      */
     public static function matches(string $condition, course_profile $profile): bool {
         try {
-            $clauses = self::parse($condition);
+            $clauses = parser::parse($condition);
         } catch (\Throwable $e) {
             return false;
         }
@@ -62,7 +61,7 @@ class evaluator {
      */
     public static function validate(string $condition) {
         try {
-            self::parse($condition);
+            parser::parse($condition);
             return true;
         } catch (\Throwable $e) {
             return $e->getMessage();
@@ -70,32 +69,9 @@ class evaluator {
     }
 
     /**
-     * Parse the expression into a list of clauses.
+     * Evaluate one structured clause against the profile.
      *
-     * @param string $condition
-     * @return array<int, array{fact: string, op: string, operand: string}>
-     * @throws \coding_exception on a malformed clause.
-     */
-    private static function parse(string $condition): array {
-        $condition = trim($condition);
-        if ($condition === '') {
-            return [];
-        }
-        $clauses = [];
-        foreach (preg_split('/\s+AND\s+/', $condition) as $part) {
-            $part = trim($part);
-            if (!preg_match('/^([\w.]+)\s+(==|!=|<=|>=|<|>|in)\s+(.+)$/', $part, $m)) {
-                throw new \coding_exception('Malformed condition clause: ' . $part);
-            }
-            $clauses[] = ['fact' => $m[1], 'op' => $m[2], 'operand' => trim($m[3])];
-        }
-        return $clauses;
-    }
-
-    /**
-     * Evaluate a single clause against the profile.
-     *
-     * @param array{fact: string, op: string, operand: string} $clause
+     * @param array{fact: string, op: string, operandkind: string, value: string|array} $clause
      * @param course_profile $profile
      * @return bool
      */
@@ -106,10 +82,14 @@ class evaluator {
             if ($left === null) {
                 return false;
             }
-            return in_array((string) $left, self::parse_set($clause['operand']), true);
+            return in_array((string) $left, (array) $clause['value'], true);
         }
 
-        $right = self::resolve_operand($clause['operand'], $profile);
+        if ($clause['operandkind'] === 'fact') {
+            $right = $profile->get($clause['value']);
+        } else {
+            $right = self::coerce_literal((string) $clause['value']);
+        }
         if ($left === null || $right === null) {
             return false;
         }
@@ -117,41 +97,23 @@ class evaluator {
     }
 
     /**
-     * Parse a `(a|b|c)` set operand into its members.
+     * Coerce a literal operand string to bool / number / string.
      *
-     * @param string $operand
-     * @return array<int, string>
-     */
-    private static function parse_set(string $operand): array {
-        $operand = trim($operand);
-        if (str_starts_with($operand, '(') && str_ends_with($operand, ')')) {
-            $operand = substr($operand, 1, -1);
-        }
-        return array_map('trim', explode('|', $operand));
-    }
-
-    /**
-     * Resolve a non-set operand to a literal value or another fact's value.
-     *
-     * @param string $operand
-     * @param course_profile $profile
+     * @param string $value
      * @return mixed
      */
-    private static function resolve_operand(string $operand, course_profile $profile) {
-        $lower = strtolower($operand);
+    private static function coerce_literal(string $value) {
+        $lower = strtolower($value);
         if ($lower === 'true') {
             return true;
         }
         if ($lower === 'false') {
             return false;
         }
-        if (is_numeric($operand)) {
-            return $operand + 0;
+        if (is_numeric($value)) {
+            return $value + 0;
         }
-        if ($profile->is_known_fact($operand)) {
-            return $profile->get($operand);
-        }
-        return $operand;
+        return $value;
     }
 
     /**

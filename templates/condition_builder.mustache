@@ -1,0 +1,25 @@
+{{!
+    @template tool_guidance/condition_builder
+
+    Shell for the graphical condition clause builder. The condition_builder AMD
+    module reads data-facts and populates [data-region="rows"], writing structured
+    JSON into the hidden conditionclauses field.
+
+    Context variables required for this template:
+    * id - Unique container id.
+    * facts - JSON string of the grouped fact metadata (fact_catalogue::for_form()).
+
+    Example context (json):
+    { "id": "tg_cond_1", "facts": "{\"groups\":[]}" }
+}}
+<div id="{{id}}" class="tool-guidance-condition-builder" data-facts="{{facts}}" data-strings="{{strings}}">
+    <p class="tool-guidance-condition-allof text-muted mb-2">{{#str}}condition_allof, tool_guidance{{/str}}</p>
+    <div data-region="rows" class="tool-guidance-condition-rows"></div>
+    <button type="button" class="btn btn-secondary btn-sm mt-1" data-action="add">
+        {{#str}}condition_addclause, tool_guidance{{/str}}
+    </button>
+    <div class="tool-guidance-condition-foot mt-2">
+        <span data-region="validity" class="tool-guidance-condition-validity"></span>
+        <code data-region="preview" class="tool-guidance-condition-preview d-block text-muted"></code>
+    </div>
+</div>

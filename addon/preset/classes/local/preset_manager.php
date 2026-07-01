@@ -170,6 +170,77 @@ class preset_manager {
     }
 
     /**
+     * Create a preset by backing up an existing course activity.
+     *
+     * Runs a single-activity backup (without user data, so the preset is a clean
+     * template) and stores the resulting .mbz as the preset's backup file. The
+     * caller must have verified moodle/backup:backupactivity in the cm context.
+     *
+     * @param \cm_info $cm The source course module.
+     * @param \stdClass $meta Preset metadata: shortname, title, description,
+     *                        descriptionformat, status, sortorder.
+     * @return \stdClass The created preset record.
+     */
+    public static function create_from_cm(\cm_info $cm, \stdClass $meta): \stdClass {
+        global $CFG, $DB, $USER;
+        require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
+
+        // Back up the single activity to a stored .mbz, excluding user data.
+        $controller = new \backup_controller(
+            \backup::TYPE_1ACTIVITY,
+            $cm->id,
+            \backup::FORMAT_MOODLE,
+            \backup::INTERACTIVE_NO,
+            \backup::MODE_GENERAL,
+            $USER->id
+        );
+        try {
+            if ($controller->get_plan()->setting_exists('users')) {
+                $controller->get_plan()->get_setting('users')->set_value(false);
+            }
+            $controller->execute_plan();
+            $result = $controller->get_results();
+        } finally {
+            $backupfile = $result['backup_destination'] ?? null;
+            $controller->destroy();
+        }
+
+        if (empty($backupfile) || !($backupfile instanceof \stored_file)) {
+            throw new \moodle_exception('backupfailed', 'guidanceaddon_preset');
+        }
+
+        $now = time();
+        $shortname = $meta->shortname;
+        $record = (object) [
+            'shortname' => $shortname,
+            'title' => $meta->title,
+            'description' => $meta->description ?? '',
+            'descriptionformat' => $meta->descriptionformat ?? FORMAT_HTML,
+            'modname' => $cm->modname,
+            'backupfile' => $shortname . '.mbz',
+            'status' => empty($meta->status) ? 0 : 1,
+            'sortorder' => $meta->sortorder ?? 0,
+            'usermodified' => $USER->id,
+            'timecreated' => $now,
+            'timemodified' => $now,
+        ];
+        $record->id = $DB->insert_record(self::TABLE, $record);
+
+        // Copy the backup into the preset's own file area, then drop the transient copy.
+        get_file_storage()->create_file_from_storedfile((object) [
+            'contextid' => \context_system::instance()->id,
+            'component' => self::COMPONENT,
+            'filearea' => self::FILEAREA_BACKUP,
+            'itemid' => $record->id,
+            'filepath' => '/',
+            'filename' => $record->backupfile,
+        ], $backupfile);
+        $backupfile->delete();
+
+        return $record;
+    }
+
+    /**
      * Delete a preset and its associated files.
      *
      * @param int $presetid Preset id.

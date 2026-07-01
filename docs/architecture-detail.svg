@@ -1,0 +1,249 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1448" height="1086" viewBox="0 0 1448 1086" role="img" aria-labelledby="title desc">
+  <title id="title">Course Improvement Architecture Diagram</title>
+  <desc id="desc">Vector recreation of the original architecture diagram with course, in-course recommendations, guided questions flow, and activity presets.</desc>
+  <defs>
+    <linearGradient id="leftBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ece4f7"/>
+      <stop offset="68%" stop-color="#f4eaff"/>
+      <stop offset="100%" stop-color="#fbf4ff"/>
+    </linearGradient>
+    <linearGradient id="middleBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e7f3f1"/>
+      <stop offset="100%" stop-color="#e4f1ee"/>
+    </linearGradient>
+    <linearGradient id="rightBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fce8df"/>
+      <stop offset="100%" stop-color="#fbe7dd"/>
+    </linearGradient>
+    <linearGradient id="courseFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#edf6ff"/>
+      <stop offset="100%" stop-color="#e5effe"/>
+    </linearGradient>
+    <linearGradient id="dbFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fdfdfd"/>
+      <stop offset="100%" stop-color="#e9e9e9"/>
+    </linearGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#111111"/>
+    </marker>
+    <filter id="softShadow" x="-8%" y="-8%" width="125%" height="125%">
+      <feOffset dx="3" dy="3" result="offset"/>
+      <feFlood flood-color="#b67906" flood-opacity="0.35"/>
+      <feComposite in2="offset" operator="in" result="shadow"/>
+      <feMerge>
+        <feMergeNode in="shadow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <style>
+      .text { font-family: Arimo, "Liberation Sans", Arial, Helvetica, sans-serif; fill: #111111; }
+      .heading { font-size: 30px; font-weight: 700; }
+      .course { font-size: 43px; font-weight: 700; fill: #0c4f9b; }
+      .boxText { font-size: 18px; font-weight: 500; }
+      .boxTextSmall { font-size: 14px; font-weight: 500; }
+      .compactBoxText { font-size: 18px; font-weight: 500; }
+      .tinyText { font-size: 14px; font-weight: 500; }
+      .annotation { font-size: 16px; font-weight: 500; }
+      .uiText { fill: #825600; }
+      .columnPurple { fill: #5f35c4; }
+      .columnTeal { fill: #08776f; }
+      .columnOrange { fill: #c84a10; }
+      .process { fill: #ffffff; stroke: #111111; stroke-width: 2.2; }
+      .ui { fill: #fef1d6; stroke: #d58b00; stroke-width: 2.8; filter: url(#softShadow); }
+      .db { fill: url(#dbFill); stroke: #333333; stroke-width: 2.1; }
+      .line { stroke: #111111; stroke-width: 2.2; fill: none; marker-end: url(#arrow); }
+      .lineNoArrow { stroke: #111111; stroke-width: 2.2; fill: none; }
+      .double { stroke: #111111; stroke-width: 2.2; fill: none; marker-start: url(#arrow); marker-end: url(#arrow); }
+      .icon { stroke: #111111; stroke-width: 2.5; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+      .uiIcon { stroke: #a16a00; stroke-width: 2.5; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+      .dbIcon { stroke: #6f6f6f; stroke-width: 2.2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+      .dbDetail { stroke: #333333; stroke-width: 2.1; fill: none; }
+      .dbText { font-size: 18px; font-weight: 500; }
+      .labelBg { fill: #ffffff; opacity: 0.88; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="514" height="1086" fill="url(#leftBg)"/>
+  <rect x="514" y="0" width="471" height="1086" fill="url(#middleBg)"/>
+  <rect x="985" y="0" width="463" height="1086" fill="url(#rightBg)"/>
+
+  <text x="260" y="59" text-anchor="middle" class="text heading columnPurple">In-Course Recommendations</text>
+  <text x="736" y="59" text-anchor="middle" class="text heading columnTeal">Guided Questions Flow</text>
+  <text x="1233" y="59" text-anchor="middle" class="text heading columnOrange">Activity Presets</text>
+
+  <rect x="36" y="87" width="1327" height="84" rx="12" fill="url(#courseFill)" stroke="#0a57c8" stroke-width="2.2"/>
+  <g transform="translate(604 111)" stroke="#0c58ae" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M6 13 C17 6 27 6 38 13 V49 C27 43 17 43 6 49 Z"/>
+    <path d="M38 13 C49 6 59 6 70 13 V49 C59 43 49 43 38 49 Z"/>
+    <path d="M38 13 V49"/>
+  </g>
+  <text x="774" y="144" text-anchor="middle" class="text course">Course</text>
+
+  <!-- In-Course Recommendations -->
+  <path d="M228 171 L228 232" class="line"/>
+
+  <rect x="86" y="232" width="260" height="92" rx="8" class="process"/>
+  <g transform="translate(112 257)">
+    <path d="M4 46 H56" class="icon"/>
+    <path d="M14 46 V30 M28 46 V18 M42 46 V26" class="icon"/>
+    <path d="M9 21 L24 12 L37 20 L53 8" class="icon"/>
+    <circle cx="9" cy="21" r="2.6" fill="#111111"/>
+    <circle cx="24" cy="12" r="2.6" fill="#111111"/>
+    <circle cx="37" cy="20" r="2.6" fill="#111111"/>
+    <circle cx="53" cy="8" r="2.6" fill="#111111"/>
+  </g>
+  <text x="178" y="286" text-anchor="start" class="text compactBoxText">Metric Extraction</text>
+
+  <path d="M228 324 L228 441" class="line"/>
+  <rect x="239" y="344" width="131" height="82" rx="6" class="labelBg"/>
+  <text x="244" y="364" class="text annotation">Provides metrics</text>
+  <text x="244" y="390" class="text annotation">as variable</text>
+  <text x="244" y="416" class="text annotation">assignments</text>
+
+  <rect x="86" y="441" width="260" height="109" rx="8" class="process"/>
+  <g transform="translate(109 468)">
+    <rect x="7" y="7" width="48" height="48" rx="10" class="icon"/>
+    <circle cx="31" cy="31" r="12" class="icon"/>
+    <path d="M31 19 V13 M31 49 V43 M19 31 H13 M49 31 H43" class="icon"/>
+    <path d="M7 20 H1 M7 31 H1 M7 42 H1 M61 20 H55 M61 31 H55 M61 42 H55" class="icon"/>
+  </g>
+  <text x="176" y="492" text-anchor="start" class="text boxText">Recommendation</text>
+  <text x="176" y="523" text-anchor="start" class="text boxText">Engine</text>
+
+  <path d="M149 550 L149 585 Q149 588 146 588 L90 588 Q89 588 89 590 L89 704" class="line"/>
+  <path d="M232 550 L232 657" class="line"/>
+
+  <rect x="15" y="704" width="154" height="82" rx="7" class="process"/>
+  <g transform="translate(25 722)">
+    <path d="M18 5 C9 5 4 12 4 20 C4 26 7 30 11 34 C13 36 13 39 13 41 H23 C23 39 23 36 25 34 C29 30 32 26 32 20 C32 12 27 5 18 5 Z" class="icon"/>
+    <path d="M13 47 H23 M15 53 H21" class="icon"/>
+    <path d="M18 14 V24 M13 19 H23" class="icon"/>
+  </g>
+  <text x="67" y="751" text-anchor="start" class="text tinyText">Suggestion</text>
+
+  <path d="M89 786 L89 890" class="line"/>
+
+  <g transform="translate(175 657)">
+    <path d="M0 24 C0 11 25 0 56 0 C87 0 112 11 112 24 V128 C112 141 87 152 56 152 C25 152 0 141 0 128 Z" class="db"/>
+    <path d="M0 24 C0 37 25 48 56 48 C87 48 112 37 112 24" class="dbDetail"/>
+    <g transform="translate(37 55)" class="dbIcon">
+      <path d="M0 8 H38 M0 22 H38 M0 36 H38"/>
+      <circle cx="12" cy="8" r="4" fill="url(#dbFill)"/>
+      <circle cx="26" cy="22" r="4" fill="url(#dbFill)"/>
+      <circle cx="17" cy="36" r="4" fill="url(#dbFill)"/>
+    </g>
+    <text x="56" y="128" text-anchor="middle" class="text dbText">Rules</text>
+  </g>
+
+  <rect x="328" y="679" width="158" height="113" rx="7" class="ui"/>
+  <g transform="translate(341 709)">
+    <path d="M2 8 H34 M2 22 H34 M2 36 H34" class="uiIcon"/>
+    <circle cx="13" cy="8" r="5" fill="#fef1d6" class="uiIcon"/>
+    <circle cx="25" cy="22" r="5" fill="#fef1d6" class="uiIcon"/>
+    <circle cx="18" cy="36" r="5" fill="#fef1d6" class="uiIcon"/>
+  </g>
+  <text x="383" y="726" text-anchor="start" class="text boxTextSmall uiText">Rule</text>
+  <text x="383" y="754" text-anchor="start" class="text boxTextSmall uiText">Management UI</text>
+  <path d="M287 735 L328 735" class="double"/>
+
+  <rect x="43" y="891" width="306" height="134" rx="8" class="ui"/>
+  <g transform="translate(69 919)">
+    <rect x="0" y="0" width="64" height="50" rx="5" class="uiIcon"/>
+    <path d="M10 14 H38 M10 26 H30" class="uiIcon"/>
+    <path d="M50 16 L53 23 L60 24 L55 29 L56 37 L50 33 L44 37 L45 29 L40 24 L47 23 Z" class="uiIcon"/>
+    <path d="M24 50 V66 M15 66 H49" class="uiIcon"/>
+  </g>
+  <text x="154" y="949" text-anchor="start" class="text boxText uiText">Recommendation</text>
+  <text x="154" y="982" text-anchor="start" class="text boxText uiText">Block</text>
+
+  <path d="M349 958 L655 958" class="line"/>
+  <rect x="520" y="912" width="139" height="30" rx="6" class="labelBg"/>
+  <text x="589.5" y="933" text-anchor="middle" class="text annotation">Jump into Flow</text>
+
+  <path d="M503 958 L503 171" class="line"/>
+  <rect x="390" y="527" width="132" height="60" rx="6" class="labelBg"/>
+  <text x="456" y="550" text-anchor="middle" class="text annotation">Apply to Course</text>
+  <text x="456" y="578" text-anchor="middle" class="text annotation">(directly)</text>
+
+  <!-- Guided Questions Flow -->
+  <rect x="554" y="504" width="170" height="122" rx="7" class="ui"/>
+  <g transform="translate(566 532)">
+    <circle cx="12" cy="12" r="8" class="uiIcon"/>
+    <circle cx="35" cy="12" r="8" class="uiIcon"/>
+    <circle cx="23.5" cy="36" r="8" class="uiIcon"/>
+    <path d="M19 12 H28 M32 19 L27 29 M15 19 L20 29" class="uiIcon"/>
+  </g>
+  <text x="614" y="558" text-anchor="start" class="text boxTextSmall uiText">Decision Graph</text>
+  <text x="614" y="586" text-anchor="start" class="text boxTextSmall uiText">Management UI</text>
+
+  <g transform="translate(770 505)">
+    <path d="M0 24 C0 11 25 0 56 0 C87 0 112 11 112 24 V128 C112 141 87 152 56 152 C25 152 0 141 0 128 Z" class="db"/>
+    <path d="M0 24 C0 37 25 48 56 48 C87 48 112 37 112 24" class="dbDetail"/>
+    <g transform="translate(32 57)" class="dbIcon">
+      <circle cx="24" cy="5" r="6"/>
+      <circle cx="6" cy="37" r="6"/>
+      <circle cx="42" cy="37" r="6"/>
+      <path d="M21 11 L9 31 M27 11 L39 31 M12 37 H36"/>
+    </g>
+    <text x="56" y="119" text-anchor="middle" class="text dbText">Decision</text>
+    <text x="56" y="142" text-anchor="middle" class="text dbText">Graph</text>
+  </g>
+  <path d="M724 563 L770 563" class="double"/>
+  <path d="M826 657 L826 887" class="line"/>
+
+  <rect x="655" y="887" width="307" height="138" rx="8" class="ui"/>
+  <g transform="translate(681 919)">
+    <path d="M0 8 Q0 0 8 0 H47 Q55 0 55 8 V30 Q55 38 47 38 H25 L14 49 V38 H8 Q0 38 0 30 Z" class="uiIcon"/>
+    <path d="M20 14 C20 8 35 8 35 15 C35 21 28 22 28 27" class="uiIcon"/>
+    <circle cx="28" cy="33" r="1.8" fill="#a16a00"/>
+  </g>
+  <text x="764" y="950" text-anchor="start" class="text boxText uiText">Guided Question</text>
+  <text x="764" y="986" text-anchor="start" class="text boxText uiText">Flow UI</text>
+
+  <!-- Activity Presets -->
+  <rect x="1144" y="232" width="195" height="113" rx="8" class="process"/>
+  <g transform="translate(1169 260)">
+    <path d="M0 0 H33 L50 17 V65 H0 Z M33 0 V17 H50" class="icon"/>
+    <path d="M14 29 H36 M14 41 H30" class="icon"/>
+    <circle cx="50" cy="55" r="15" fill="#ffffff" stroke="#111111" stroke-width="2.5"/>
+    <path d="M50 47 V63 M42 55 H58" class="icon"/>
+  </g>
+  <text x="1242" y="282" text-anchor="start" class="text compactBoxText">Preset</text>
+  <text x="1242" y="314" text-anchor="start" class="text compactBoxText">Application</text>
+  <path d="M1248 232 L1248 171" class="line"/>
+
+  <rect x="985" y="504" width="174" height="122" rx="7" class="ui"/>
+  <g transform="translate(1002 532)">
+    <path d="M0 0 H32 L43 11 V50 H0 Z M32 0 V11 H43" class="uiIcon"/>
+    <path d="M10 18 H30 M10 30 H36 M10 42 H24" class="uiIcon"/>
+    <circle cx="30" cy="30" r="4" fill="#fef1d6" class="uiIcon"/>
+  </g>
+  <text x="1052" y="558" text-anchor="start" class="text boxTextSmall uiText">Preset</text>
+  <text x="1052" y="586" text-anchor="start" class="text boxTextSmall uiText">Management UI</text>
+
+  <g transform="translate(1192 505)">
+    <path d="M0 24 C0 11 25 0 56 0 C87 0 112 11 112 24 V128 C112 141 87 152 56 152 C25 152 0 141 0 128 Z" class="db"/>
+    <path d="M0 24 C0 37 25 48 56 48 C87 48 112 37 112 24" class="dbDetail"/>
+    <g transform="translate(36 54)" class="dbIcon">
+      <path d="M0 0 H27 L40 13 V45 H0 Z M27 0 V13 H40"/>
+      <path d="M10 22 H30 M10 34 H25"/>
+    </g>
+    <text x="56" y="128" text-anchor="middle" class="text dbText">Presets</text>
+  </g>
+  <path d="M1159 563 L1192 563" class="double"/>
+  <path d="M1248 657 L1248 887" class="line"/>
+  <path d="M1248 505 L1248 345" class="line"/>
+
+  <rect x="1092" y="887" width="264" height="138" rx="8" class="ui"/>
+  <g transform="translate(1117 915)">
+    <path d="M0 0 H31 L49 18 V75 H0 Z M31 0 V18 H49" class="uiIcon"/>
+    <path d="M13 35 H35 M13 51 H32" class="uiIcon"/>
+    <circle cx="68" cy="57" r="16" fill="#fef1d6" class="uiIcon"/>
+    <path d="M68 48 V66 M59 57 H77" class="uiIcon"/>
+  </g>
+  <text x="1228" y="940" text-anchor="start" class="text boxText uiText">Preset</text>
+  <text x="1228" y="971" text-anchor="start" class="text boxText uiText">Application</text>
+  <text x="1228" y="1002" text-anchor="start" class="text boxText uiText">Dialog</text>
+
+  <path d="M962 958 L1092 958" class="line"/>
+</svg>

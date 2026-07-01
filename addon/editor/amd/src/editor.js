@@ -78,6 +78,8 @@ export const init = (graphid) => {
     let s = {};
     let targettypes = [];
     let activitymods = [];
+    let presets = [];
+    let presetlabel = 'Preset';
     const root = document.querySelector('[data-region="editor"]');
     const surface = root.querySelector('[data-region="surface"]');
     const edges = root.querySelector('[data-region="edges"]');
@@ -250,6 +252,26 @@ export const init = (graphid) => {
                 nd.targetconfig = {modname: activitymods[0].value};
             }
             field(s.modname, sel);
+        } else if (nd.targettype === 'preset') {
+            const sel = document.createElement('select');
+            sel.className = 'form-select form-select-sm';
+            presets.forEach((p) => {
+                const o = document.createElement('option');
+                o.value = p.value;
+                o.textContent = p.label;
+                if (String(p.value) === String(cfg.presetid)) {
+                    o.selected = true;
+                }
+                sel.appendChild(o);
+            });
+            sel.addEventListener('change', () => {
+                nd.targetconfig = {presetid: parseInt(sel.value, 10)};
+                queueSave(nd);
+            });
+            if (!cfg.presetid && presets.length) {
+                nd.targetconfig = {presetid: parseInt(presets[0].value, 10)};
+            }
+            field(presetlabel, sel);
         } else if (nd.targettype === 'route') {
             const inp = document.createElement('input');
             inp.type = 'text';
@@ -826,6 +848,10 @@ export const init = (graphid) => {
     const load = (data) => {
         targettypes = data.targettypes;
         activitymods = data.activitymods;
+        presets = data.presets || [];
+        if (data.presetlabel) {
+            presetlabel = data.presetlabel;
+        }
         data.nodes.forEach((n) => {
             const nd = {
                 id: n.id, type: n.type, title: n.title, description: n.description,

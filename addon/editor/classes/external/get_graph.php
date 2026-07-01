@@ -104,12 +104,24 @@ class get_graph extends external_api {
             $activitymods[] = ['value' => $value, 'label' => $label];
         }
 
+        // Presets are provided by the guidanceaddon_preset subplugin, if installed.
+        $presets = [];
+        $presetlabel = '';
+        if (class_exists(\guidanceaddon_preset\local\preset_manager::class)) {
+            foreach (\guidanceaddon_preset\local\preset_manager::get_enabled() as $preset) {
+                $presets[] = ['value' => (int) $preset->id, 'label' => format_string($preset->title)];
+            }
+            $presetlabel = get_string('target:preset:preset', 'guidanceaddon_preset');
+        }
+
         return [
             'rootnodeid' => (int) $graph->get('rootnodeid'),
             'nodes' => $nodes,
             'links' => $links,
             'targettypes' => $targettypes,
             'activitymods' => $activitymods,
+            'presets' => $presets,
+            'presetlabel' => $presetlabel,
         ];
     }
 
@@ -147,6 +159,11 @@ class get_graph extends external_api {
                 'value' => new external_value(PARAM_PLUGIN, 'Module name'),
                 'label' => new external_value(PARAM_TEXT, 'Module display name'),
             ])),
+            'presets' => new external_multiple_structure(new external_single_structure([
+                'value' => new external_value(PARAM_INT, 'Preset id'),
+                'label' => new external_value(PARAM_TEXT, 'Preset title'),
+            ]), 'Available activity presets', VALUE_DEFAULT, []),
+            'presetlabel' => new external_value(PARAM_TEXT, 'Label for the preset selector', VALUE_DEFAULT, ''),
         ]);
     }
 }

@@ -41,16 +41,21 @@ class node_exporter extends exporter {
     /** @var int Course id used to build answer/CTA URLs. */
     protected $courseid;
 
+    /** @var int Section number the chooser was launched from. */
+    protected $sectionnum;
+
     /**
      * Constructor.
      *
      * @param node $node The node to export.
      * @param int $courseid Course id.
      * @param context $context Context used to format the text properties.
+     * @param int $sectionnum Section number the activity should be created in.
      */
-    public function __construct(node $node, int $courseid, context $context) {
+    public function __construct(node $node, int $courseid, context $context, int $sectionnum = 0) {
         $this->node = $node;
         $this->courseid = $courseid;
+        $this->sectionnum = $sectionnum;
         parent::__construct((object) [], ['context' => $context]);
     }
 
@@ -131,27 +136,10 @@ class node_exporter extends exporter {
     }
 
     /**
-     * Build the action URL for an activity target, given this chooser's course.
-     *
-     * @param array $config Decoded target config.
-     * @return moodle_url|null
-     */
-    protected function activity_action_url(array $config): ?moodle_url {
-        $modname = $config['modname'] ?? '';
-        if ($modname === '') {
-            return null;
-        }
-        return new moodle_url('/course/modedit.php', [
-            'add' => $modname,
-            'course' => $this->courseid,
-            'section' => 0,
-            'return' => 0,
-            'sr' => 0,
-        ]);
-    }
-
-    /**
      * Build the single-item preset list for a leaf node's target.
+     *
+     * The target type resolves its own course-aware action URL and icon, so new
+     * target types (e.g. activity presets) work here without changes.
      *
      * @param renderer_base $output
      * @return array
@@ -162,25 +150,17 @@ class node_exporter extends exporter {
             return [];
         }
         $config = $this->node->get_targetconfig_array();
+        $target = targetmanager::get_target($targettype, $config);
 
-        if ($targettype === 'activity') {
-            $useurl = $this->activity_action_url($config);
-            $iconurl = ($config['modname'] ?? '') !== ''
-                ? $output->image_url('monologo', 'mod_' . $config['modname'])
-                : $output->image_url('i/info', 'core');
-        } else {
-            $useurl = targetmanager::get_target($targettype, $config)->get_action_url();
-            $iconurl = $output->image_url('i/info', 'core');
-        }
-
+        $useurl = $target->get_action_url_for_course($this->courseid, $this->sectionnum);
         if (!$useurl) {
             // Draft leaf with no target details configured yet: nothing to offer.
             return [];
         }
 
         return [[
-            'modname' => $targettype === 'activity' ? ($config['modname'] ?? '') : '',
-            'iconurl' => $iconurl->out(false),
+            'modname' => $config['modname'] ?? '',
+            'iconurl' => $target->get_icon($output)->out(false),
             'title' => $this->node->get('title'),
             'description' => (string) $this->node->get('description'),
             'useurl' => $useurl->out(false),

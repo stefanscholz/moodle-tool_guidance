@@ -31,12 +31,34 @@ namespace tool_guidance\target;
  * database schema change is required.
  */
 class manager {
-    /** @var array<string,class-string<base>> Map of type key => class. */
+    /** @var array<string,class-string<base>> Core map of type key => class. */
     const TYPES = [
         'activity' => activity::class,
         'route'    => route::class,
         'url'      => url::class,
     ];
+
+    /**
+     * All known target types (core + those contributed by guidanceaddon subplugins).
+     *
+     * A guidanceaddon can add target types by shipping a class
+     * guidanceaddon_<name>\guidance_targets with a static get_targets() method
+     * returning [typekey => classname]. No core change is needed to add a type.
+     *
+     * @return array<string,class-string<base>>
+     */
+    public static function all_types(): array {
+        $types = self::TYPES;
+        foreach (\core_component::get_plugin_list('guidanceaddon') as $name => $unused) {
+            $class = "guidanceaddon_{$name}\\guidance_targets";
+            if (class_exists($class) && method_exists($class, 'get_targets')) {
+                foreach ($class::get_targets() as $key => $targetclass) {
+                    $types[$key] = $targetclass;
+                }
+            }
+        }
+        return $types;
+    }
 
     /**
      * Does a target type with this key exist?
@@ -45,7 +67,7 @@ class manager {
      * @return bool
      */
     public static function type_exists(string $type): bool {
-        return isset(self::TYPES[$type]);
+        return isset(self::all_types()[$type]);
     }
 
     /**
@@ -56,10 +78,11 @@ class manager {
      * @return base
      */
     public static function get_target(string $type, array $config = []): base {
-        if (!self::type_exists($type)) {
+        $types = self::all_types();
+        if (!isset($types[$type])) {
             throw new \coding_exception('Unknown guidance target type: ' . $type);
         }
-        $class = self::TYPES[$type];
+        $class = $types[$type];
         return new $class($config);
     }
 
@@ -70,8 +93,8 @@ class manager {
      */
     public static function get_menu(): array {
         $menu = [];
-        foreach (array_keys(self::TYPES) as $type) {
-            $menu[$type] = get_string('target:' . $type, 'tool_guidance');
+        foreach (array_keys(self::all_types()) as $type) {
+            $menu[$type] = self::get_target($type)->get_menu_label();
         }
         return $menu;
     }

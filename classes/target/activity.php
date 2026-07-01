@@ -68,7 +68,31 @@ class activity extends base {
 
     #[\Override]
     public function get_action_url(): ?\moodle_url {
-        // Resolved by the teacher-facing traversal with a course context.
+        // Needs a course context; resolved in get_action_url_for_course().
         return null;
+    }
+
+    #[\Override]
+    public function get_action_url_for_course(int $courseid, int $sectionnum = 0): ?\moodle_url {
+        $modname = $this->config['modname'] ?? '';
+        if ($modname === '') {
+            return null;
+        }
+        return new \moodle_url('/course/modedit.php', [
+            'add' => $modname,
+            'course' => $courseid,
+            'section' => $sectionnum,
+            'return' => 0,
+            'sr' => 0,
+        ]);
+    }
+
+    #[\Override]
+    public function get_icon(\renderer_base $output): \moodle_url {
+        $modname = $this->config['modname'] ?? '';
+        if ($modname === '') {
+            return parent::get_icon($output);
+        }
+        return $output->image_url('monologo', 'mod_' . $modname);
     }
 }

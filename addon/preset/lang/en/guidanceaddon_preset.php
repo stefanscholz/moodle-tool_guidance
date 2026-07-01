@@ -74,3 +74,13 @@ $string['target:preset:action'] = 'Create this activity';
 $string['target:preset:preset'] = 'Preset';
 $string['error:presetrequired'] = 'Choose a preset for this outcome.';
 $string['error:presetunknown'] = 'The selected preset no longer exists or is disabled.';
+
+// Create-from-activity flow.
+$string['createfromactivity'] = 'Create from activity';
+$string['choosecourse'] = 'Course';
+$string['listactivities'] = 'List activities';
+$string['sourceactivity'] = 'Activity to copy';
+$string['chooseactivity'] = 'Choose an activity from the selected course.';
+$string['nocourseactivities'] = 'The selected course has no activities to copy.';
+$string['presetcreatedfromactivity'] = 'Preset created from the activity.';
+$string['backupfailed'] = 'The activity backup could not be created.';

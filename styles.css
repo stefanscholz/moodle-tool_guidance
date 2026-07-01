@@ -85,11 +85,6 @@
     border-top: 4px solid #6f5499;
 }
 
-.tg-node-root {
-    box-shadow: 0 0 0 2px #2a4d69, 0 1px 4px rgba(0, 0, 0, 0.12);
-}
-
-/* The chooser entry is always a root; its green ring wins by coming later. */
 .tg-node-entry {
     box-shadow: 0 0 0 2px #2e8b57, 0 1px 4px rgba(0, 0, 0, 0.12);
 }
@@ -134,7 +129,6 @@
     flex: 1 1 auto;
 }
 
-.tg-node-root-badge,
 .tg-node-chooser-badge {
     display: none;
     font-size: 0.7rem;
@@ -143,18 +137,9 @@
     border-radius: 8px;
 }
 
-.tg-node-root-badge {
-    color: #2a4d69;
-    background: #dce6f0;
-}
-
 .tg-node-chooser-badge {
     color: #fff;
     background: #2e8b57;
-}
-
-.tg-node-root .tg-node-root-badge {
-    display: inline;
 }
 
 .tg-node-entry .tg-node-chooser-badge {

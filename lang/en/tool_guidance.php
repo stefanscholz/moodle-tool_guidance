@@ -56,22 +56,17 @@ $string['addnode'] = 'Add node';
 $string['editnode'] = 'Edit node';
 $string['deletenode'] = 'Delete node';
 $string['confirmdeletenode'] = 'Delete the node "{$a}" and every answer pointing to or from it?';
-$string['rootnode'] = 'Root node';
-$string['setrootnode'] = 'Mark as root';
-$string['unsetrootnode'] = 'Unmark root';
-$string['isrootnode'] = 'Root';
-$string['noroot'] = 'No root node set.';
 $string['setchooserentry'] = 'Use for "Help me choose"';
 $string['ischooserentry'] = 'Help me choose';
 
 // Site chooser entry (the single node "Help me choose" starts from).
 $string['chooserentry'] = 'Help me choose start node';
-$string['chooserentrydesc'] = 'The single root node the "Help me choose" chooser starts from. Traversal stays within that node\'s graph.';
+$string['chooserentrydesc'] = 'The top-level node the "Help me choose" chooser starts from. Existing selections are kept if the graph is later rewired.';
 $string['chooserentrycurrent'] = 'Current start node: {$a}';
 $string['chooserentrynone'] = 'No start node has been selected yet.';
 $string['chooserentrysave'] = 'Set start node';
 $string['chooserentryoption'] = '{$a->graph}: {$a->node}';
-$string['norootnodes'] = 'No root nodes yet. Mark a node as a root in the editor first.';
+$string['norootnodes'] = 'No top-level nodes yet. Add a node that is not reached by another answer first.';
 $string['defaultgraphname'] = 'Default guidance graph';
 $string['defaultrootquestion'] = 'What are you trying to do?';
 

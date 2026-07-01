@@ -227,7 +227,7 @@ final class api_test extends \advanced_testcase {
         $this->assertNull(api::get_chooser_entry_node());
     }
 
-    public function test_set_chooser_entry_flags_node_as_root(): void {
+    public function test_set_chooser_entry_does_not_mark_node_as_root(): void {
         $this->resetAfterTest();
         $graph = $this->make_graph();
         $q1 = $this->make_question($graph->get('id'), 'Q1');
@@ -236,8 +236,48 @@ final class api_test extends \advanced_testcase {
         api::set_chooser_entry($q1->get('id'));
 
         $q1->read();
-        $this->assertTrue((bool) $q1->get('isroot'));
+        $this->assertFalse((bool) $q1->get('isroot'));
         $this->assertEquals($q1->get('id'), api::get_chooser_entry_node()->get('id'));
+    }
+
+    public function test_graph_roots_are_inferred_from_incoming_links(): void {
+        $this->resetAfterTest();
+        $graph = $this->make_graph();
+        $q1 = $this->make_question($graph->get('id'), 'Q1');
+        $q2 = $this->make_question($graph->get('id'), 'Q2');
+        $q3 = $this->make_question($graph->get('id'), 'Q3');
+        $this->make_link($graph->get('id'), $q1->get('id'), $q2->get('id'));
+
+        $rootids = array_map(static function(node $node): int {
+            return (int) $node->get('id');
+        }, $graph->get_root_nodes());
+
+        $this->assertContains((int) $q1->get('id'), $rootids);
+        $this->assertContains((int) $q3->get('id'), $rootids);
+        $this->assertNotContains((int) $q2->get('id'), $rootids);
+    }
+
+    public function test_new_chooser_entry_must_be_top_level(): void {
+        $this->resetAfterTest();
+        $graph = $this->make_graph();
+        $q1 = $this->make_question($graph->get('id'), 'Q1');
+        $q2 = $this->make_question($graph->get('id'), 'Q2');
+        $this->make_link($graph->get('id'), $q1->get('id'), $q2->get('id'));
+
+        $this->expectException(\invalid_parameter_exception::class);
+        api::set_chooser_entry($q2->get('id'));
+    }
+
+    public function test_existing_chooser_entry_survives_later_incoming_link(): void {
+        $this->resetAfterTest();
+        $graph = $this->make_graph();
+        $q1 = $this->make_question($graph->get('id'), 'Q1');
+        $q2 = $this->make_question($graph->get('id'), 'Q2');
+
+        api::set_chooser_entry($q2->get('id'));
+        $this->make_link($graph->get('id'), $q1->get('id'), $q2->get('id'));
+
+        $this->assertEquals($q2->get('id'), api::get_chooser_entry_node()->get('id'));
     }
 
     public function test_ensure_default_graph_is_idempotent(): void {
@@ -246,7 +286,7 @@ final class api_test extends \advanced_testcase {
         $this->assertEquals(1, graph::count_records());
         $entry = api::get_chooser_entry_node();
         $this->assertNotNull($entry);
-        $this->assertTrue((bool) $entry->get('isroot'));
+        $this->assertTrue(api::is_top_level_node($entry));
 
         // A second call with a graph already present does nothing.
         api::ensure_default_graph();

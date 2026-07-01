@@ -25,7 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'guidanceaddon_editor';
-$plugin->version   = 2026070101;
+$plugin->version   = 2026070102;
 $plugin->requires  = 2024100700; // Moodle 4.5 or later.
 $plugin->maturity  = MATURITY_ALPHA;
 $plugin->release   = '0.1.0';

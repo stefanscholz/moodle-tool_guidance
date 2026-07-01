@@ -110,15 +110,14 @@ class save_node extends external_api {
                 $node->update();
             } else {
                 $graph = new graph($params['graphid']);
-                // The first node of a graph becomes a root so the tree always has
-                // an entry point; further roots are added deliberately with the
-                // root toggle.
-                $record->isroot = $graph->get_root_nodes() ? 0 : 1;
+                $hadroot = (bool) $graph->get_root_nodes();
+                // The first node of a graph is top-level because it has no
+                // incoming answers yet.
                 $node = new node(0, $record);
                 $node->create();
-                // If the site has no chooser entry yet, adopt this first root so
-                // "Help me choose" works straight away.
-                if ($record->isroot && !api::get_chooser_entry_node()) {
+                // If the site has no chooser entry yet, adopt this first
+                // top-level node so "Help me choose" works straight away.
+                if (!$hadroot && !api::get_chooser_entry_node()) {
                     api::set_chooser_entry((int) $node->get('id'));
                 }
             }

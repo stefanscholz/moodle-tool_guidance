@@ -113,7 +113,6 @@ class graph_seeder {
                 'title' => (string) ($nodedef['title'] ?? ''),
                 'description' => (string) ($nodedef['description'] ?? ''),
                 'descriptionformat' => FORMAT_HTML,
-                'isroot' => ($key === $entrykey) ? 1 : 0,
                 'posx' => $x,
                 'posy' => $y,
             ];

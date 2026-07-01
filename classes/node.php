@@ -70,7 +70,7 @@ class node extends \core\persistent {
             ],
             'isroot' => [
                 'type' => PARAM_BOOL,
-                'description' => 'Whether this node is a root (entry point) of its tree.',
+                'description' => 'Legacy manual root flag; active roots are inferred from links.',
                 'default' => false,
             ],
             'targettype' => [
@@ -160,7 +160,7 @@ class node extends \core\persistent {
     }
 
     /**
-     * Is this node a root (entry point) of its tree?
+     * Is this node marked with the legacy manual root flag?
      *
      * @return bool
      */

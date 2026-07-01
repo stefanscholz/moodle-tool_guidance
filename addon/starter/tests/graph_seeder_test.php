@@ -49,11 +49,11 @@ final class graph_seeder_test extends \advanced_testcase {
         $this->assertCount(19, node::get_records(['graphid' => $graphid]));
         $this->assertCount(19, link::get_records(['graphid' => $graphid]));
 
-        // The entry node is a root that the chooser starts from.
+        // The entry node is top-level and the chooser starts from it.
         $entry = api::get_chooser_entry_node();
         $this->assertNotNull($entry);
         $this->assertSame($graphid, (int) $entry->get('graphid'));
-        $this->assertEquals(1, (int) $entry->get('isroot'));
+        $this->assertTrue(api::is_top_level_node($entry));
         $this->assertSame('What would you like to do?', $entry->get('title'));
     }
 
@@ -159,7 +159,7 @@ final class graph_seeder_test extends \advanced_testcase {
         $entry = api::get_chooser_entry_node();
         $this->assertNotNull($entry);
         $this->assertSame('Start here', $entry->get('title'));
-        $this->assertEquals(1, (int) $entry->get('isroot'));
+        $this->assertTrue(api::is_top_level_node($entry));
 
         unlink($file);
     }

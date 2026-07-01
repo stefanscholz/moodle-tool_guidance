@@ -41,21 +41,16 @@ class node_exporter extends exporter {
     /** @var int Course id used to build answer/CTA URLs. */
     protected $courseid;
 
-    /** @var int Section number the chooser was launched from. */
-    protected $sectionnum;
-
     /**
      * Constructor.
      *
      * @param node $node The node to export.
      * @param int $courseid Course id.
      * @param context $context Context used to format the text properties.
-     * @param int $sectionnum Section number the activity should be created in.
      */
-    public function __construct(node $node, int $courseid, context $context, int $sectionnum = 0) {
+    public function __construct(node $node, int $courseid, context $context) {
         $this->node = $node;
         $this->courseid = $courseid;
-        $this->sectionnum = $sectionnum;
         parent::__construct((object) [], ['context' => $context]);
     }
 
@@ -136,10 +131,27 @@ class node_exporter extends exporter {
     }
 
     /**
-     * Build the single-item preset list for a leaf node's target.
+     * Build the action URL for an activity target, given this chooser's course.
      *
-     * The target type resolves its own course-aware action URL and icon, so new
-     * target types (e.g. activity presets) work here without changes.
+     * @param array $config Decoded target config.
+     * @return moodle_url|null
+     */
+    protected function activity_action_url(array $config): ?moodle_url {
+        $modname = $config['modname'] ?? '';
+        if ($modname === '') {
+            return null;
+        }
+        return new moodle_url('/course/modedit.php', [
+            'add' => $modname,
+            'course' => $this->courseid,
+            'section' => 0,
+            'return' => 0,
+            'sr' => 0,
+        ]);
+    }
+
+    /**
+     * Build the single-item preset list for a leaf node's target.
      *
      * @param renderer_base $output
      * @return array
@@ -150,7 +162,6 @@ class node_exporter extends exporter {
             return [];
         }
         $config = $this->node->get_targetconfig_array();
-        $target = targetmanager::get_target($targettype, $config);
 
         // Presets resolve against the optional preset addon and degrade to a
         // display-only card when it is absent, so they get their own path.
@@ -174,8 +185,8 @@ class node_exporter extends exporter {
         }
 
         return [[
-            'modname' => $config['modname'] ?? '',
-            'iconurl' => $target->get_icon($output)->out(false),
+            'modname' => $targettype === 'activity' ? ($config['modname'] ?? '') : '',
+            'iconurl' => $iconurl->out(false),
             'title' => $this->node->get('title'),
             'description' => (string) $this->node->get('description'),
             'useurl' => $useurl->out(false),

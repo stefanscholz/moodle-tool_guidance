@@ -31,7 +31,6 @@ use tool_guidance\output\chooser_page;
 
 $courseid = required_param('courseid', PARAM_INT);
 $nodeid = optional_param('node', 0, PARAM_INT);
-$sectionnum = optional_param('section', 0, PARAM_INT);
 
 $course = get_course($courseid);
 require_login($course);
@@ -39,8 +38,7 @@ require_login($course);
 $context = context_course::instance($course->id);
 require_capability('tool/guidance:view', $context);
 
-$PAGE->set_url(new moodle_url('/admin/tool/guidance/chooser.php',
-    ['courseid' => $course->id, 'node' => $nodeid, 'section' => $sectionnum]));
+$PAGE->set_url(new moodle_url('/admin/tool/guidance/chooser.php', ['courseid' => $course->id, 'node' => $nodeid]));
 $PAGE->set_context($context);
 $PAGE->set_course($course);
 $PAGE->set_pagelayout('incourse');

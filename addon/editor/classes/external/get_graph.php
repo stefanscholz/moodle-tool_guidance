@@ -120,8 +120,6 @@ class get_graph extends external_api {
             'links' => $links,
             'targettypes' => $targettypes,
             'activitymods' => $activitymods,
-            'presets' => $presets,
-            'presetlabel' => $presetlabel,
         ];
     }
 
@@ -161,11 +159,6 @@ class get_graph extends external_api {
                 'value' => new external_value(PARAM_PLUGIN, 'Module name'),
                 'label' => new external_value(PARAM_TEXT, 'Module display name'),
             ])),
-            'presets' => new external_multiple_structure(new external_single_structure([
-                'value' => new external_value(PARAM_INT, 'Preset id'),
-                'label' => new external_value(PARAM_TEXT, 'Preset title'),
-            ]), 'Available activity presets', VALUE_DEFAULT, []),
-            'presetlabel' => new external_value(PARAM_TEXT, 'Label for the preset selector', VALUE_DEFAULT, ''),
         ]);
     }
 }

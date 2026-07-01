@@ -94,5 +94,46 @@ function xmldb_tool_guidance_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026070102, 'tool', 'guidance');
     }
 
+    if ($oldversion < 2026070103) {
+        // Suggestion engine tables (introduced via merge, so create them for
+        // existing installs) and seed the default rules if empty.
+        $xmlfile = __DIR__ . '/install.xml';
+        foreach (['tool_guidance_rule', 'tool_guidance_dismissed'] as $tablename) {
+            if (!$dbman->table_exists(new xmldb_table($tablename))) {
+                $dbman->install_one_table_from_xmldb_file($xmlfile, $tablename);
+            }
+        }
+
+        // Seed the default rule table from the shipped CSV if it is still empty.
+        if (!$DB->count_records('tool_guidance_rule')) {
+            $path = __DIR__ . '/seed_rules.csv';
+            if (is_readable($path) && ($handle = fopen($path, 'r')) !== false) {
+                fgetcsv($handle); // Skip the header row.
+                $now = time();
+                while (($row = fgetcsv($handle)) !== false) {
+                    if (count($row) < 8) {
+                        continue;
+                    }
+                    [$sortorder, $enabled, $signal, $name, $condition, $suggest, $rationale, $preconfig] = $row;
+                    $DB->insert_record('tool_guidance_rule', (object) [
+                        'sortorder' => (int) $sortorder,
+                        'enabled' => (int) $enabled,
+                        'signal' => trim($signal),
+                        'name' => trim($name),
+                        'conditiontext' => trim($condition),
+                        'suggestmod' => trim($suggest),
+                        'rationale' => trim($rationale),
+                        'preconfig' => trim($preconfig),
+                        'timecreated' => $now,
+                        'timemodified' => $now,
+                    ]);
+                }
+                fclose($handle);
+            }
+        }
+
+        upgrade_plugin_savepoint(true, 2026070103, 'tool', 'guidance');
+    }
+
     return true;
 }

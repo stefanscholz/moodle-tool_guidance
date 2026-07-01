@@ -15,17 +15,23 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Plugin version and metadata for tool_guidance (graph chooser + suggestion engine).
+ * Cache definitions for the activity suggestion engine.
  *
  * @package    tool_guidance
- * @copyright  2026 Lily Asshauer, bdecent gmbh <https://bdecent.de>
+ * @copyright  2026 bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'tool_guidance';
-$plugin->version   = 2026070103;
-$plugin->requires  = 2025041400; // Moodle 5.0 or later (targeting 5.2).
-$plugin->maturity  = MATURITY_ALPHA;
-$plugin->release   = '0.2.0';
+$definitions = [
+    // The computed top suggestion per course. Course-wide (identical for all teachers),
+    // so keyed simply by course id. Purged on course module changes and dismissals.
+    'suggestions' => [
+        'mode'          => cache_store::MODE_APPLICATION,
+        'simplekeys'    => true,
+        'simpledata'    => false,
+        'staticacceleration' => true,
+        'ttl'           => 3600,
+    ],
+];

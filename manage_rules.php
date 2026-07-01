@@ -103,6 +103,7 @@ $table->head = [
     get_string('rule_signal', 'tool_guidance'),
     get_string('rule_condition', 'tool_guidance'),
     get_string('rule_suggest', 'tool_guidance'),
+    get_string('rule_target', 'tool_guidance'),
     get_string('rule_enabled', 'tool_guidance'),
     get_string('actions'),
 ];
@@ -133,12 +134,23 @@ foreach ($rules as $index => $rule) {
         new moodle_url($baseurl, ['action' => 'delete', 'ruleid' => $rule->id, 'sesskey' => sesskey()]),
         new pix_icon('t/delete', get_string('deleterule', 'tool_guidance')));
 
+    if ($rule->targettype === 'node') {
+        $targetlabel = get_string('rule_targetnode', 'tool_guidance') . ' #' . s($rule->targetvalue);
+    } else if ($rule->targettype === 'adminlink') {
+        $targetlabel = \tool_guidance\local\admin_links::exists($rule->targetvalue)
+            ? get_string('adminlink_' . $rule->targetvalue, 'tool_guidance')
+            : s($rule->targetvalue);
+    } else {
+        $targetlabel = get_string('target_activity', 'tool_guidance');
+    }
+
     $table->data[] = [
         $rule->sortorder,
         format_string($rule->name),
         $signalnames[$rule->signaltype] ?? $rule->signaltype,
         html_writer::tag('code', s($rule->conditiontext)),
         s($rule->suggestmod),
+        $targetlabel,
         $rule->enabled ? get_string('yes') : get_string('no'),
         implode(' ', $actions),
     ];

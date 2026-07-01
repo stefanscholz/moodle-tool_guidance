@@ -86,6 +86,8 @@
         <FIELD NAME="suggestmod" TYPE="char" LENGTH="32" NOTNULL="true" SEQUENCE="false" COMMENT="Suggested activity module name."/>
         <FIELD NAME="rationale" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Teacher-facing reason."/>
         <FIELD NAME="preconfig" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Opaque preconfig payload for the add-activity flow."/>
+        <FIELD NAME="targettype" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="activity" SEQUENCE="false" COMMENT="Where the CTA links: activity|node|adminlink."/>
+        <FIELD NAME="targetvalue" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Node id (node) or admin-link key (adminlink); empty for activity."/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
       </FIELDS>

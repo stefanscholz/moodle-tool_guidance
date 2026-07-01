@@ -41,21 +41,16 @@ class node_exporter extends exporter {
     /** @var int Course id used to build answer/CTA URLs. */
     protected $courseid;
 
-    /** @var int Section number the chooser was launched from. */
-    protected $sectionnum;
-
     /**
      * Constructor.
      *
      * @param node $node The node to export.
      * @param int $courseid Course id.
      * @param context $context Context used to format the text properties.
-     * @param int $sectionnum Section number the activity should be created in.
      */
-    public function __construct(node $node, int $courseid, context $context, int $sectionnum = 0) {
+    public function __construct(node $node, int $courseid, context $context) {
         $this->node = $node;
         $this->courseid = $courseid;
-        $this->sectionnum = $sectionnum;
         parent::__construct((object) [], ['context' => $context]);
     }
 
@@ -79,6 +74,7 @@ class node_exporter extends exporter {
             'isquestion' => ['type' => PARAM_BOOL],
             'isresult' => ['type' => PARAM_BOOL],
             'prompt' => ['type' => PARAM_TEXT],
+            'description' => ['type' => PARAM_RAW],
             'answers' => [
                 'multiple' => true,
                 'type' => [
@@ -136,10 +132,27 @@ class node_exporter extends exporter {
     }
 
     /**
-     * Build the single-item preset list for a leaf node's target.
+     * Build the action URL for an activity target, given this chooser's course.
      *
-     * The target type resolves its own course-aware action URL and icon, so new
-     * target types (e.g. activity presets) work here without changes.
+     * @param array $config Decoded target config.
+     * @return moodle_url|null
+     */
+    protected function activity_action_url(array $config): ?moodle_url {
+        $modname = $config['modname'] ?? '';
+        if ($modname === '') {
+            return null;
+        }
+        return new moodle_url('/course/modedit.php', [
+            'add' => $modname,
+            'course' => $this->courseid,
+            'section' => 0,
+            'return' => 0,
+            'sr' => 0,
+        ]);
+    }
+
+    /**
+     * Build the single-item preset list for a leaf node's target.
      *
      * @param renderer_base $output
      * @return array
@@ -150,20 +163,91 @@ class node_exporter extends exporter {
             return [];
         }
         $config = $this->node->get_targetconfig_array();
-        $target = targetmanager::get_target($targettype, $config);
 
-        $useurl = $target->get_action_url_for_course($this->courseid, $this->sectionnum);
+        // Presets resolve against the optional preset addon and degrade to a
+        // display-only card when it is absent, so they get their own path.
+        if ($targettype === 'preset') {
+            return $this->export_preset_target($output, $config);
+        }
+
+        if ($targettype === 'activity') {
+            $useurl = $this->activity_action_url($config);
+            $iconurl = ($config['modname'] ?? '') !== ''
+                ? $output->image_url('monologo', 'mod_' . $config['modname'])
+                : $output->image_url('i/info', 'core');
+        } else {
+            $useurl = targetmanager::get_target($targettype, $config)->get_action_url();
+            $iconurl = $output->image_url('i/info', 'core');
+        }
+
         if (!$useurl) {
             // Draft leaf with no target details configured yet: nothing to offer.
             return [];
         }
 
         return [[
-            'modname' => $config['modname'] ?? '',
-            'iconurl' => $target->get_icon($output)->out(false),
+            'modname' => $targettype === 'activity' ? ($config['modname'] ?? '') : '',
+            'iconurl' => $iconurl->out(false),
             'title' => $this->node->get('title'),
             'description' => (string) $this->node->get('description'),
             'useurl' => $useurl->out(false),
+            'config' => [],
+        ]];
+    }
+
+    /**
+     * Build the recommendation card for a preset leaf target.
+     *
+     * Resolves the short name against the optional guidanceaddon_preset addon.
+     * When the addon or the preset is missing the card is still shown, but with
+     * no "apply" URL (display-only), so the tree stays usable seed-only.
+     *
+     * @param renderer_base $output
+     * @param array $config Decoded target config (expects 'shortname').
+     * @return array
+     */
+    protected function export_preset_target(renderer_base $output, array $config): array {
+        $shortname = trim((string) ($config['shortname'] ?? ''));
+        if ($shortname === '') {
+            // Draft leaf with no preset chosen yet: nothing to offer.
+            return [];
+        }
+
+        $managerclass = \tool_guidance\target\preset::MANAGER;
+        $record = class_exists($managerclass) ? $managerclass::get_by_shortname($shortname) : null;
+
+        // Node text wins; fall back to the preset record when the node is blank.
+        $title = (string) $this->node->get('title');
+        $description = (string) $this->node->get('description');
+        $modname = '';
+        $useurl = null;
+
+        if ($record) {
+            $modname = (string) ($record->modname ?? '');
+            if ($title === '') {
+                $title = (string) $record->title;
+            }
+            if ($description === '') {
+                $description = (string) $record->description;
+            }
+            $useurl = new moodle_url('/admin/tool/guidance/addon/preset/apply.php', [
+                'presetid' => $record->id,
+                'courseid' => $this->courseid,
+                'section' => 0,
+                'sesskey' => sesskey(),
+            ]);
+        }
+
+        $iconurl = $modname !== ''
+            ? $output->image_url('monologo', 'mod_' . $modname)
+            : $output->image_url('i/info', 'core');
+
+        return [[
+            'modname' => $modname,
+            'iconurl' => $iconurl->out(false),
+            'title' => $title,
+            'description' => $description,
+            'useurl' => $useurl ? $useurl->out(false) : '',
             'config' => [],
         ]];
     }
@@ -180,6 +264,11 @@ class node_exporter extends exporter {
             'isquestion' => $this->node->is_question(),
             'isresult' => $this->node->is_leaf(),
             'prompt' => $this->node->get('title'),
+            'description' => format_text(
+                (string) $this->node->get('description'),
+                $this->node->get('descriptionformat') ?? FORMAT_HTML,
+                ['context' => $this->related['context']]
+            ),
             'answers' => $this->node->is_question() ? $this->export_answers() : [],
             'presets' => $this->node->is_leaf() ? $this->export_presets($output) : [],
         ];

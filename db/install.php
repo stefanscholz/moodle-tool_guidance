@@ -27,12 +27,15 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * Load db/seed_rules.csv into the rule table.
  *
- * Columns: sortorder, enabled, signal, name, condition, suggest, rationale, preconfig.
+ * Columns: sortorder, enabled, signaltype, name, condition, suggest, rationale, preconfig.
  *
  * @return bool
  */
 function xmldb_tool_guidance_install() {
     global $DB, $CFG;
+
+    // Every site needs one initial graph for the assignment chooser.
+    \tool_guidance\api::ensure_default_graph();
 
     $path = $CFG->dirroot . '/admin/tool/guidance/db/seed_rules.csv';
     if (!is_readable($path)) {
@@ -50,11 +53,11 @@ function xmldb_tool_guidance_install() {
         if (count($row) < 8) {
             continue;
         }
-        [$sortorder, $enabled, $signal, $name, $condition, $suggest, $rationale, $preconfig] = $row;
+        [$sortorder, $enabled, $signaltype, $name, $condition, $suggest, $rationale, $preconfig] = $row;
         $DB->insert_record('tool_guidance_rule', (object) [
             'sortorder'     => (int) $sortorder,
             'enabled'       => (int) $enabled,
-            'signal'        => trim($signal),
+            'signaltype'    => trim($signaltype),
             'name'          => trim($name),
             'conditiontext' => trim($condition),
             'suggestmod'    => trim($suggest),

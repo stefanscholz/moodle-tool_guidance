@@ -49,7 +49,7 @@ if ($existing) {
     $form->set_data([
         'id'            => $existing->id,
         'name'          => $existing->name,
-        'signal'        => $existing->signal,
+        'signaltype'    => $existing->signaltype,
         'suggestmod'    => $existing->suggestmod,
         'conditionclauses' => json_encode(parser::parse($existing->conditiontext)),
         'rationale'     => $existing->rationale,
@@ -71,7 +71,7 @@ if ($form->is_cancelled()) {
         (int) $data->id,
         (int) $sortorder,
         (bool) $data->enabled,
-        $data->signal,
+        $data->signaltype,
         $data->name,
         $conditiontext,
         $data->suggestmod,

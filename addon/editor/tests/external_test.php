@@ -60,9 +60,10 @@ final class external_test extends \advanced_testcase {
         $this->assertEquals('', $q['error']);
         $this->assertGreaterThan(0, $q['id']);
 
-        // First node becomes the graph root.
-        $graph = new graph($graphid);
-        $this->assertEquals($q['id'], $graph->get('rootnodeid'));
+        // First node of a graph becomes a root and the site chooser entry.
+        $firstnode = new node($q['id']);
+        $this->assertTrue((bool) $firstnode->get('isroot'));
+        $this->assertEquals($q['id'], \tool_guidance\api::get_chooser_entry_node()->get('id'));
 
         $leaf = save_node::execute(
             $graphid,

@@ -17,7 +17,7 @@
 namespace tool_guidance\form;
 
 use tool_guidance\local\condition\evaluator;
-use tool_guidance\local\condition\parser;
+use tool_guidance\local\profile\course_profile;
 use tool_guidance\local\profile\fact_catalogue;
 
 defined('MOODLE_INTERNAL') || die();
@@ -46,41 +46,29 @@ class rule_form extends \moodleform {
             ['size' => 50]);
         $mform->setType('name', PARAM_TEXT);
         $mform->addRule('name', null, 'required', null, 'client');
-        $mform->addHelpButton('name', 'rule_name', 'tool_guidance');
 
         $signals = [
             'gap'        => get_string('signal_gap', 'tool_guidance'),
             'lifecycle'  => get_string('signal_lifecycle', 'tool_guidance'),
             'engagement' => get_string('signal_engagement', 'tool_guidance'),
         ];
-        $mform->addElement('select', 'signal', get_string('rule_signal', 'tool_guidance'), $signals);
-        $mform->addHelpButton('signal', 'rule_signal', 'tool_guidance');
+        $mform->addElement('select', 'signaltype', get_string('rule_signal', 'tool_guidance'), $signals);
 
         $mform->addElement('select', 'suggestmod', get_string('rule_suggest', 'tool_guidance'),
             self::module_options());
-        $mform->addHelpButton('suggestmod', 'rule_suggest', 'tool_guidance');
 
-        global $PAGE, $OUTPUT;
-        $uniqid = \html_writer::random_id('tool_guidance_cond_');
-        $builder = $OUTPUT->render_from_template('tool_guidance/condition_builder', [
-            'id' => $uniqid,
-            'facts' => json_encode(fact_catalogue::for_form()),
-            'strings' => json_encode(self::builder_strings()),
-        ]);
+        $mform->addElement('textarea', 'conditiontext', get_string('rule_condition', 'tool_guidance'),
+            ['rows' => 3, 'cols' => 70, 'style' => 'font-family:monospace;']);
+        $mform->setType('conditiontext', PARAM_RAW_TRIMMED);
+        $mform->addHelpButton('conditiontext', 'rule_condition', 'tool_guidance');
 
-        $mform->addElement('hidden', 'conditionclauses', '');
-        $mform->setType('conditionclauses', PARAM_RAW);
-
-        $mform->addElement('static', 'conditionbuilder', get_string('rule_condition', 'tool_guidance'), $builder);
-        $mform->addHelpButton('conditionbuilder', 'rule_condition', 'tool_guidance');
-
-        $PAGE->requires->js_call_amd('tool_guidance/condition_builder', 'init', [$uniqid]);
+        $mform->addElement('static', 'facts', get_string('availablefacts', 'tool_guidance'),
+            self::facts_hint());
 
         $mform->addElement('textarea', 'rationale', get_string('rule_rationale', 'tool_guidance'),
             ['rows' => 2, 'cols' => 70]);
         $mform->setType('rationale', PARAM_TEXT);
         $mform->addRule('rationale', null, 'required', null, 'client');
-        $mform->addHelpButton('rationale', 'rule_rationale', 'tool_guidance');
 
         $mform->addElement('text', 'preconfig', get_string('rule_preconfig', 'tool_guidance'),
             ['size' => 70]);
@@ -90,11 +78,9 @@ class rule_form extends \moodleform {
         $mform->addElement('text', 'sortorder', get_string('rule_sortorder', 'tool_guidance'),
             ['size' => 6]);
         $mform->setType('sortorder', PARAM_INT);
-        $mform->addHelpButton('sortorder', 'rule_sortorder', 'tool_guidance');
 
         $mform->addElement('advcheckbox', 'enabled', get_string('rule_enabled', 'tool_guidance'));
         $mform->setDefault('enabled', 1);
-        $mform->addHelpButton('enabled', 'rule_enabled', 'tool_guidance');
 
         $this->add_action_buttons();
     }
@@ -109,33 +95,9 @@ class rule_form extends \moodleform {
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
 
-        $clauses = json_decode($data['conditionclauses'] ?? '[]', true);
-        if (!is_array($clauses)) {
-            $clauses = [];
-        }
-
-        $incomplete = false;
-        foreach ($clauses as $clause) {
-            if (empty($clause['fact']) || empty($clause['op'])) {
-                $incomplete = true;
-                break;
-            }
-            $kind = $clause['operandkind'] ?? 'literal';
-            $value = $clause['value'] ?? '';
-            $empty = $kind === 'set' ? !array_filter((array) $value) : (trim((string) $value) === '');
-            if ($empty) {
-                $incomplete = true;
-                break;
-            }
-        }
-
-        if ($incomplete) {
-            $errors['conditionbuilder'] = get_string('conditionincomplete', 'tool_guidance');
-        } else {
-            $result = evaluator::validate(parser::compile($clauses));
-            if ($result !== true) {
-                $errors['conditionbuilder'] = get_string('conditioninvalid', 'tool_guidance', $result);
-            }
+        $result = evaluator::validate($data['conditiontext'] ?? '');
+        if ($result !== true) {
+            $errors['conditiontext'] = get_string('conditioninvalid', 'tool_guidance', $result);
         }
 
         if (!array_key_exists($data['suggestmod'] ?? '', self::module_options())) {
@@ -143,44 +105,6 @@ class rule_form extends \moodleform {
         }
 
         return $errors;
-    }
-
-    /**
-     * Compile the submitted clause JSON into a condition DSL string.
-     *
-     * @param string $json
-     * @return string
-     */
-    public static function compile_clauses(string $json): string {
-        $clauses = json_decode($json, true);
-        return is_array($clauses) ? parser::compile($clauses) : '';
-    }
-
-    /**
-     * The translated UI strings the condition builder JS needs, passed to it via a
-     * data attribute so the AMD module stays dependency-free.
-     *
-     * @return array
-     */
-    private static function builder_strings(): array {
-        return [
-            'yes' => get_string('condition_yes', 'tool_guidance'),
-            'no' => get_string('condition_no', 'tool_guidance'),
-            'remove' => get_string('condition_removeclause', 'tool_guidance'),
-            'literal' => get_string('condition_valuetype_literal', 'tool_guidance'),
-            'fact' => get_string('condition_valuetype_fact', 'tool_guidance'),
-            'matchesall' => get_string('condition_matchesall', 'tool_guidance'),
-            'incomplete' => get_string('condition_incomplete', 'tool_guidance'),
-            'ops' => [
-                '==' => get_string('op_eq', 'tool_guidance'),
-                '!=' => get_string('op_neq', 'tool_guidance'),
-                '<' => get_string('op_lt', 'tool_guidance'),
-                '<=' => get_string('op_lte', 'tool_guidance'),
-                '>' => get_string('op_gt', 'tool_guidance'),
-                '>=' => get_string('op_gte', 'tool_guidance'),
-                'in' => get_string('op_in', 'tool_guidance'),
-            ],
-        ];
     }
 
     /**
@@ -195,5 +119,16 @@ class rule_form extends \moodleform {
         }
         \core_collator::asort($options);
         return $options;
+    }
+
+    /**
+     * A short hint listing the available facts for rule authors.
+     *
+     * @return string
+     */
+    private static function facts_hint(): string {
+        $keys = array_keys(fact_catalogue::scalar_facts());
+        $keys[] = fact_catalogue::MODULE_COUNT_PREFIX . '<modname>';
+        return \html_writer::tag('small', s(implode(', ', $keys)));
     }
 }

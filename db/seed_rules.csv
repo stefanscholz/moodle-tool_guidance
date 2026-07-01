@@ -1,4 +1,4 @@
-sortorder,enabled,signal,name,condition,suggest,rationale,preconfig
+sortorder,enabled,signaltype,name,condition,suggest,rationale,preconfig
 1,1,gap,Empty course landing page,is_empty_shell == true,page,"Your course is empty. Start with a page that welcomes students and explains what the course is about.",name=Welcome
 2,1,lifecycle,Pre-start with no content,term_stage == prestart AND has_purpose_content == false,page,"The course hasn't started yet and has no materials. Add an introductory page outlining its aims and structure.",name=Course information
 3,1,lifecycle,Pre-start introductions forum,term_stage in (prestart|week1) AND module_count.forum == 0,forum,"Give students a place to introduce themselves before teaching begins.",type=general;name=Introduce yourself

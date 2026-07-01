@@ -38,6 +38,9 @@
 }}
 <div class="tool-guidance-question">
     <h3 class="tool-guidance-prompt">{{prompt}}</h3>
+    {{#description}}
+        <div class="tool-guidance-node-description text-muted mb-3">{{{description}}}</div>
+    {{/description}}
     <ul class="tool-guidance-answers list-unstyled">
         {{#answers}}
             <li class="tool-guidance-answer-item">

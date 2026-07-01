@@ -15,30 +15,22 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Registers the guidance leaf target types provided by this addon.
+ * Library functions for tool_guidance.
  *
- * @package    guidanceaddon_preset
- * @copyright  2026 bdecent gmbh <https://bdecent.de>
+ * @package    tool_guidance
+ * @copyright  2026 Lily Asshauer
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-namespace guidanceaddon_preset;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Discovered by tool_guidance\target\manager to add addon target types.
+ * Map this plugin's pix icon keys onto FontAwesome classes.
+ *
+ * @return array pixkey => fontawesome class
  */
-class guidance_targets {
-
-    /**
-     * Map of target type key => implementing class.
-     *
-     * @return array<string,string>
-     */
-    public static function get_targets(): array {
-        return [
-            'preset' => \guidanceaddon_preset\target\preset::class,
-        ];
-    }
+function tool_guidance_get_fontawesome_icon_map(): array {
+    return [
+        'tool_guidance:i/graph' => 'fa-diagram-project',
+    ];
 }

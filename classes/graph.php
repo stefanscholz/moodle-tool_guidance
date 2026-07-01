@@ -25,7 +25,8 @@
 namespace tool_guidance;
 
 /**
- * Represents one guidance graph (a decision tree with a single entry node).
+ * Represents one guidance graph. A graph may contain several root nodes; the
+ * single node the chooser starts from is tracked site-wide, not per graph.
  */
 class graph extends \core\persistent {
     /** @var string Table name. */
@@ -59,12 +60,6 @@ class graph extends \core\persistent {
                 'choices' => [FORMAT_HTML, FORMAT_MOODLE, FORMAT_PLAIN, FORMAT_MARKDOWN],
                 'default' => FORMAT_HTML,
             ],
-            'rootnodeid' => [
-                'type' => PARAM_INT,
-                'description' => 'Entry node id.',
-                'null' => NULL_ALLOWED,
-                'default' => null,
-            ],
             'enabled' => [
                 'type' => PARAM_BOOL,
                 'default' => false,
@@ -79,6 +74,15 @@ class graph extends \core\persistent {
      */
     public function get_nodes(): array {
         return node::get_records(['graphid' => $this->get('id')], 'id');
+    }
+
+    /**
+     * Return the root nodes of this graph (entry points of its trees).
+     *
+     * @return node[]
+     */
+    public function get_root_nodes(): array {
+        return node::get_records(['graphid' => $this->get('id'), 'isroot' => 1], 'id');
     }
 
     /**

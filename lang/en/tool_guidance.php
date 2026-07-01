@@ -56,26 +56,47 @@ $string['addnode'] = 'Add node';
 $string['editnode'] = 'Edit node';
 $string['deletenode'] = 'Delete node';
 $string['confirmdeletenode'] = 'Delete the node "{$a}" and every answer pointing to or from it?';
-$string['rootnode'] = 'Entry node';
-$string['setrootnode'] = 'Set as entry node';
-$string['isrootnode'] = 'Entry node';
-$string['noroot'] = 'No entry node set.';
+$string['rootnode'] = 'Root node';
+$string['setrootnode'] = 'Mark as root';
+$string['unsetrootnode'] = 'Unmark root';
+$string['isrootnode'] = 'Root';
+$string['noroot'] = 'No root node set.';
+$string['setchooserentry'] = 'Use for "Help me choose"';
+$string['ischooserentry'] = 'Help me choose';
+
+// Site chooser entry (the single node "Help me choose" starts from).
+$string['chooserentry'] = 'Help me choose start node';
+$string['chooserentrydesc'] = 'The single root node the "Help me choose" chooser starts from. Traversal stays within that node\'s graph.';
+$string['chooserentrycurrent'] = 'Current start node: {$a}';
+$string['chooserentrynone'] = 'No start node has been selected yet.';
+$string['chooserentrysave'] = 'Set start node';
+$string['chooserentryoption'] = '{$a->graph}: {$a->node}';
+$string['norootnodes'] = 'No root nodes yet. Mark a node as a root in the editor first.';
+$string['defaultgraphname'] = 'Default guidance graph';
+$string['defaultrootquestion'] = 'What are you trying to do?';
 
 // Node fields.
 $string['nodetype'] = 'Type';
 $string['nodetype:question'] = 'Question';
-$string['nodetype:leaf'] = 'Leaf (recommendation)';
+$string['nodetype:leaf'] = 'Recommendation';
 $string['nodetitle'] = 'Title / question';
 $string['nodedescription'] = 'Description';
 $string['nodetargettype'] = 'Target type';
 
 // Canvas editor.
 $string['addquestion'] = 'Add question';
-$string['addleaf'] = 'Add leaf';
+$string['addleaf'] = 'Add recommendation';
+$string['autolayout'] = 'Auto layout';
+$string['autolayouttitle'] = 'Arrange all nodes top-to-bottom automatically';
 $string['answerlabeldefault'] = 'Answer';
 $string['createnodehere'] = 'Create here';
-$string['editorhint'] = 'Drag from a question\'s bottom dot to drop an answer: onto a node to link it, or onto empty space to leave it dangling. Drag an answer\'s dot to point it at a node (or empty space to create one). Drag the background to pan.';
+$string['editorhint'] = 'Drag from a question\'s bottom dot to drop an answer: onto a node to link it, or onto empty space to leave it dangling. Drag an answer\'s dot to point it at a node (or empty space to create one). Drag the background to pan, scroll to zoom, and double-click empty space to add a node.';
 $string['untitlednode'] = '(untitled)';
+$string['zoomcontrols'] = 'Zoom';
+$string['zoomin'] = 'Zoom in';
+$string['zoomout'] = 'Zoom out';
+$string['zoomreset'] = 'Reset zoom';
+$string['zoomfit'] = 'Fit graph to view';
 $string['confirmdeletenodejs'] = 'Delete this node and every answer touching it?';
 
 // Answer links.
@@ -93,6 +114,9 @@ $string['sortorder'] = 'Order';
 $string['target:activity'] = 'Create an activity';
 $string['target:activity:action'] = 'Add this activity';
 $string['target:activity:modname'] = 'Activity type';
+$string['target:preset'] = 'Create from a preset';
+$string['target:preset:action'] = 'Use this preset';
+$string['target:preset:shortname'] = 'Preset';
 $string['target:route'] = 'Internal page';
 $string['target:route:action'] = 'Open page';
 $string['target:route:path'] = 'Moodle path';
@@ -114,6 +138,7 @@ $string['error:selflink'] = 'A node cannot link to itself.';
 $string['error:cycle'] = 'This answer would create a loop in the graph.';
 $string['error:activitymodnamerequired'] = 'Choose an activity type.';
 $string['error:activitymodnameunknown'] = 'Unknown activity type: {$a}';
+$string['error:presetshortnamerequired'] = 'Choose a preset.';
 $string['error:routepathrequired'] = 'Enter a Moodle path.';
 $string['error:routepathrelative'] = 'The path must be site-relative and start with a slash.';
 $string['error:urlrequired'] = 'Enter a URL.';

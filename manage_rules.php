@@ -35,6 +35,20 @@ $ruleid = optional_param('ruleid', 0, PARAM_INT);
 $repository = new rule_repository();
 $baseurl = new moodle_url('/admin/tool/guidance/manage_rules.php');
 
+// Reset all rules to the shipped defaults (no ruleid; needs its own handler).
+if ($action === 'reset' && confirm_sesskey()) {
+    if (optional_param('confirm', 0, PARAM_BOOL)) {
+        $seeded = $repository->reset_to_defaults();
+        redirect($baseurl, get_string('rulesreset', 'tool_guidance', $seeded));
+    }
+    $PAGE->set_title(get_string('resetrules', 'tool_guidance'));
+    echo $OUTPUT->header();
+    $confirmurl = new moodle_url($baseurl, ['action' => 'reset', 'confirm' => 1, 'sesskey' => sesskey()]);
+    echo $OUTPUT->confirm(get_string('confirmreset', 'tool_guidance'), $confirmurl, $baseurl);
+    echo $OUTPUT->footer();
+    exit;
+}
+
 if ($action && $ruleid && confirm_sesskey()) {
     switch ($action) {
         case 'up':
@@ -77,10 +91,12 @@ echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('managerules', 'tool_guidance'));
 echo html_writer::tag('p', get_string('managerules_desc', 'tool_guidance'));
 
-echo html_writer::div(
-    $OUTPUT->single_button(new moodle_url('/admin/tool/guidance/edit_rule.php'),
-        get_string('addrule', 'tool_guidance'), 'get'),
-    'mb-3');
+$buttons = $OUTPUT->single_button(new moodle_url('/admin/tool/guidance/edit_rule.php'),
+    get_string('addrule', 'tool_guidance'), 'get');
+$buttons .= $OUTPUT->single_button(
+    new moodle_url($baseurl, ['action' => 'reset', 'sesskey' => sesskey()]),
+    get_string('resetrules', 'tool_guidance'), 'get');
+echo html_writer::div($buttons, 'mb-3 d-flex gap-2');
 
 $rules = $repository->get_all_rules();
 

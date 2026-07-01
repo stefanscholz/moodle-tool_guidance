@@ -15,24 +15,25 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * External function: persist a node's canvas position.
+ * External function: delete a node and its links.
  *
  * @package    tool_guidance
  * @copyright  2026 Lily Asshauer
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace tool_guidance\external;
+namespace guidanceaddon_editor\external;
 
 use core_external\external_api;
 use core_external\external_function_parameters;
 use core_external\external_value;
+use tool_guidance\api;
 use tool_guidance\node;
 
 /**
- * Lightweight position-only save, called when a node is dragged.
+ * Deletes a node together with every link touching it.
  */
-class move_node extends external_api {
+class delete_node extends external_api {
     /**
      * Parameters.
      *
@@ -41,32 +42,22 @@ class move_node extends external_api {
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
             'id' => new external_value(PARAM_INT, 'Node id'),
-            'posx' => new external_value(PARAM_FLOAT, 'Canvas X'),
-            'posy' => new external_value(PARAM_FLOAT, 'Canvas Y'),
         ]);
     }
 
     /**
-     * Update position.
+     * Delete the node.
      *
      * @param int $id
-     * @param float $posx
-     * @param float $posy
      * @return bool
      */
-    public static function execute(int $id, float $posx, float $posy): bool {
-        $params = self::validate_parameters(
-            self::execute_parameters(),
-            ['id' => $id, 'posx' => $posx, 'posy' => $posy]
-        );
+    public static function execute(int $id): bool {
+        $params = self::validate_parameters(self::execute_parameters(), ['id' => $id]);
         $context = \context_system::instance();
         self::validate_context($context);
         require_capability('tool/guidance:manage', $context);
 
-        $node = new node($params['id']);
-        $node->set('posx', $params['posx']);
-        $node->set('posy', $params['posy']);
-        $node->update();
+        api::delete_node(new node($params['id']));
         return true;
     }
 

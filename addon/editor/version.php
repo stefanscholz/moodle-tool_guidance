@@ -15,17 +15,20 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Plugin version and metadata for tool_guidance (graph chooser + suggestion engine).
+ * Version details for the Guidance graph editor subplugin.
  *
- * @package    tool_guidance
+ * @package    guidanceaddon_editor
  * @copyright  2026 Lily Asshauer, bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'tool_guidance';
-$plugin->version   = 2026070104;
-$plugin->requires  = 2025041400; // Moodle 5.0 or later (targeting 5.2).
+$plugin->component = 'guidanceaddon_editor';
+$plugin->version   = 2026070100;
+$plugin->requires  = 2025041400; // Moodle 5.0 or later.
 $plugin->maturity  = MATURITY_ALPHA;
-$plugin->release   = '0.2.0';
+$plugin->release   = '0.1.0';
+$plugin->dependencies = [
+    'tool_guidance' => ANY_VERSION,
+];

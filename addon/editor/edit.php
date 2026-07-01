@@ -22,7 +22,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require(__DIR__ . '/../../../config.php');
+require(__DIR__ . '/../../../../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 
 use tool_guidance\graph;
@@ -30,18 +30,18 @@ use tool_guidance\graph;
 $graphid = required_param('graphid', PARAM_INT);
 
 admin_externalpage_setup('tool_guidance_managegraphs');
-$PAGE->set_url(new moodle_url('/admin/tool/guidance/edit.php', ['graphid' => $graphid]));
+$PAGE->set_url(new moodle_url('/admin/tool/guidance/addon/editor/edit.php', ['graphid' => $graphid]));
 
 $graph = new graph($graphid);
 
 // Only the graph id is passed inline; strings load via core/str and the target
 // type / activity lists arrive with the get_graph web service response.
-$PAGE->requires->js_call_amd('tool_guidance/editor', 'init', [$graphid]);
+$PAGE->requires->js_call_amd('guidanceaddon_editor/editor', 'init', [$graphid]);
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('managenodesfor', 'tool_guidance', format_string($graph->get('name'))));
 echo html_writer::div(
-    html_writer::link(new moodle_url('/admin/tool/guidance/index.php'), get_string('backtographs', 'tool_guidance'))
+    html_writer::link(new moodle_url('/admin/tool/guidance/addon/editor/index.php'), get_string('backtographs', 'tool_guidance'))
 );
-echo $OUTPUT->render_from_template('tool_guidance/editor', []);
+echo $OUTPUT->render_from_template('guidanceaddon_editor/editor', []);
 echo $OUTPUT->footer();

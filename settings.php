@@ -52,11 +52,8 @@ if ($hassiteconfig) {
     $ADMIN->add('tool_guidance', $settingspage);
 
     // Decision-graph authoring.
-    $ADMIN->add('tool_guidance', new admin_externalpage(
-        'tool_guidance_managegraphs',
-        get_string('managegraphs', 'tool_guidance'),
-        new moodle_url('/admin/tool/guidance/index.php'),
-        'tool/guidance:manage'));
+    // Decision-graph authoring lives in the guidanceaddon_editor subplugin and
+    // registers its own management page (loaded via the addon loop below).
 
     // Suggestion rule table.
     $ADMIN->add('tool_guidance', new admin_externalpage(

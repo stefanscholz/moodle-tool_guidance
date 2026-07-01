@@ -28,7 +28,7 @@
  * through the tool_guidance web services, which enforce the no-cycle and
  * parent-is-question rules server-side.
  *
- * @module     tool_guidance/editor
+ * @module     guidanceaddon_editor/editor
  * @copyright  2026 Lily Asshauer
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -63,11 +63,11 @@ const STRINGKEYS = [
 /**
  * Call a single tool_guidance web service method.
  *
- * @param {String} method Short name without the tool_guidance_ prefix.
+ * @param {String} method Short name without the guidanceaddon_editor_ prefix.
  * @param {Object} args
  * @returns {Promise}
  */
-const call = (method, args) => Ajax.call([{methodname: 'tool_guidance_' + method, args: args}])[0];
+const call = (method, args) => Ajax.call([{methodname: 'guidanceaddon_editor_' + method, args: args}])[0];
 
 /**
  * Initialise the editor on the current page.

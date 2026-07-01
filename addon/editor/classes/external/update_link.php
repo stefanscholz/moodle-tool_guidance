@@ -15,14 +15,14 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * External function: persist an answer box's canvas position.
+ * External function: rename an answer link.
  *
  * @package    tool_guidance
  * @copyright  2026 Lily Asshauer
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace tool_guidance\external;
+namespace guidanceaddon_editor\external;
 
 use core_external\external_api;
 use core_external\external_function_parameters;
@@ -30,9 +30,9 @@ use core_external\external_value;
 use tool_guidance\link;
 
 /**
- * Lightweight position-only save, called when an answer box is dragged.
+ * Updates the answer label on an existing link.
  */
-class move_answer extends external_api {
+class update_link extends external_api {
     /**
      * Parameters.
      *
@@ -40,32 +40,29 @@ class move_answer extends external_api {
      */
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
-            'id' => new external_value(PARAM_INT, 'Answer (link) id'),
-            'posx' => new external_value(PARAM_FLOAT, 'Canvas X'),
-            'posy' => new external_value(PARAM_FLOAT, 'Canvas Y'),
+            'id' => new external_value(PARAM_INT, 'Link id'),
+            'answerlabel' => new external_value(PARAM_TEXT, 'Answer label'),
         ]);
     }
 
     /**
-     * Update position.
+     * Update the label.
      *
      * @param int $id
-     * @param float $posx
-     * @param float $posy
+     * @param string $answerlabel
      * @return bool
      */
-    public static function execute(int $id, float $posx, float $posy): bool {
+    public static function execute(int $id, string $answerlabel): bool {
         $params = self::validate_parameters(
             self::execute_parameters(),
-            ['id' => $id, 'posx' => $posx, 'posy' => $posy]
+            ['id' => $id, 'answerlabel' => $answerlabel]
         );
         $context = \context_system::instance();
         self::validate_context($context);
         require_capability('tool/guidance:manage', $context);
 
         $link = new link($params['id']);
-        $link->set('posx', $params['posx']);
-        $link->set('posy', $params['posy']);
+        $link->set('answerlabel', $params['answerlabel']);
         $link->update();
         return true;
     }

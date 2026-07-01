@@ -22,18 +22,18 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require(__DIR__ . '/../../../config.php');
+require(__DIR__ . '/../../../../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 
 use tool_guidance\graph;
-use tool_guidance\form\graph_form;
+use guidanceaddon_editor\form\graph_form;
 
 $id = optional_param('id', 0, PARAM_INT);
 
 admin_externalpage_setup('tool_guidance_managegraphs');
-$PAGE->set_url(new moodle_url('/admin/tool/guidance/editgraph.php', ['id' => $id]));
+$PAGE->set_url(new moodle_url('/admin/tool/guidance/addon/editor/editgraph.php', ['id' => $id]));
 
-$listurl = new moodle_url('/admin/tool/guidance/index.php');
+$listurl = new moodle_url('/admin/tool/guidance/addon/editor/index.php');
 
 $graph = $id ? new graph($id) : null;
 

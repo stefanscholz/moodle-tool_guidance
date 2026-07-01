@@ -278,3 +278,7 @@ $string['privacy:metadata:dismissed:courseid'] = 'The course the suggestion was 
 $string['privacy:metadata:dismissed:ruleid'] = 'The suggestion rule that was dismissed.';
 $string['privacy:metadata:dismissed:userid'] = 'The user who dismissed the suggestion.';
 $string['privacy:metadata:dismissed:timecreated'] = 'When the suggestion was dismissed.';
+
+// Subplugin type display names.
+$string['subplugintype_guidanceaddon'] = 'Guidance addon';
+$string['subplugintype_guidanceaddon_plural'] = 'Guidance addons';

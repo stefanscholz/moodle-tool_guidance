@@ -15,25 +15,29 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * External function: set the entry node of a graph.
+ * External function: point an answer at a child node (or clear it).
  *
  * @package    tool_guidance
  * @copyright  2026 Lily Asshauer
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace tool_guidance\external;
+namespace guidanceaddon_editor\external;
 
 use core_external\external_api;
 use core_external\external_function_parameters;
+use core_external\external_single_structure;
 use core_external\external_value;
-use tool_guidance\graph;
-use tool_guidance\node;
+use tool_guidance\api;
+use tool_guidance\link;
 
 /**
- * Marks a node as the graph's entry node.
+ * Attaches a dangling answer to a child node, replaces its target, or clears it.
+ *
+ * Returns an empty error on success, or a populated error (e.g. a cycle) so the
+ * canvas can refuse the connection without a fatal error.
  */
-class set_root extends external_api {
+class link_answer extends external_api {
     /**
      * Parameters.
      *
@@ -41,43 +45,44 @@ class set_root extends external_api {
      */
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
-            'graphid' => new external_value(PARAM_INT, 'Graph id'),
-            'nodeid' => new external_value(PARAM_INT, 'Node id'),
+            'id' => new external_value(PARAM_INT, 'Answer (link) id'),
+            'childnodeid' => new external_value(PARAM_INT, 'Child node id, 0 to clear'),
         ]);
     }
 
     /**
-     * Set the entry node.
+     * Set or clear the child.
      *
-     * @param int $graphid
-     * @param int $nodeid
-     * @return bool
+     * @param int $id
+     * @param int $childnodeid
+     * @return array
      */
-    public static function execute(int $graphid, int $nodeid): bool {
+    public static function execute(int $id, int $childnodeid): array {
         $params = self::validate_parameters(
             self::execute_parameters(),
-            ['graphid' => $graphid, 'nodeid' => $nodeid]
+            ['id' => $id, 'childnodeid' => $childnodeid]
         );
         $context = \context_system::instance();
         self::validate_context($context);
         require_capability('tool/guidance:manage', $context);
 
-        $node = new node($params['nodeid']);
-        if ((int) $node->get('graphid') !== $params['graphid']) {
-            throw new \invalid_parameter_exception('Node does not belong to the graph');
+        try {
+            api::set_answer_child(new link($params['id']), $params['childnodeid']);
+        } catch (\moodle_exception | \core\invalid_persistent_exception $e) {
+            return ['error' => $e->getMessage()];
         }
-        $graph = new graph($params['graphid']);
-        $graph->set('rootnodeid', $node->get('id'));
-        $graph->update();
-        return true;
+
+        return ['error' => ''];
     }
 
     /**
-     * Return value.
+     * Return structure.
      *
-     * @return external_value
+     * @return external_single_structure
      */
-    public static function execute_returns(): external_value {
-        return new external_value(PARAM_BOOL, 'Success');
+    public static function execute_returns(): external_single_structure {
+        return new external_single_structure([
+            'error' => new external_value(PARAM_RAW, 'Rejection reason, empty on success'),
+        ]);
     }
 }

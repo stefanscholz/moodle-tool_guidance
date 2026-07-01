@@ -22,7 +22,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace tool_guidance\external;
+namespace guidanceaddon_editor\external;
 
 use core_external\external_api;
 use core_external\external_function_parameters;

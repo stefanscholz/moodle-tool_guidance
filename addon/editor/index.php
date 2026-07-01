@@ -22,7 +22,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require(__DIR__ . '/../../../config.php');
+require(__DIR__ . '/../../../../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 
 use tool_guidance\api;
@@ -33,7 +33,7 @@ admin_externalpage_setup('tool_guidance_managegraphs');
 $delete = optional_param('delete', 0, PARAM_INT);
 $confirm = optional_param('confirm', 0, PARAM_BOOL);
 
-$baseurl = new moodle_url('/admin/tool/guidance/index.php');
+$baseurl = new moodle_url('/admin/tool/guidance/addon/editor/index.php');
 
 if ($delete) {
     $graph = new graph($delete);
@@ -67,8 +67,8 @@ if (!$graphs) {
     ];
     foreach ($graphs as $graph) {
         $id = $graph->get('id');
-        $nodesurl = new moodle_url('/admin/tool/guidance/edit.php', ['graphid' => $id]);
-        $editurl = new moodle_url('/admin/tool/guidance/editgraph.php', ['id' => $id]);
+        $nodesurl = new moodle_url('/admin/tool/guidance/addon/editor/edit.php', ['graphid' => $id]);
+        $editurl = new moodle_url('/admin/tool/guidance/addon/editor/editgraph.php', ['id' => $id]);
         $deleteurl = new moodle_url($baseurl, ['delete' => $id]);
         $actions = $OUTPUT->action_icon($nodesurl, new pix_icon('i/manageboxes', get_string('nodes', 'tool_guidance')))
             . $OUTPUT->action_icon($editurl, new pix_icon('t/edit', get_string('edit')))
@@ -85,7 +85,7 @@ if (!$graphs) {
 }
 
 echo $OUTPUT->single_button(
-    new moodle_url('/admin/tool/guidance/editgraph.php'),
+    new moodle_url('/admin/tool/guidance/addon/editor/editgraph.php'),
     get_string('addgraph', 'tool_guidance'),
     'get'
 );

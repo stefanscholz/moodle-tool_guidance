@@ -17,22 +17,24 @@
 /**
  * Tests for the tool_guidance external (web service) layer.
  *
- * @package    tool_guidance
+ * @package    guidanceaddon_editor
  * @copyright  2026 Lily Asshauer
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \tool_guidance\external\save_node
- * @covers     \tool_guidance\external\create_link
- * @covers     \tool_guidance\external\link_answer
+ * @covers     \guidanceaddon_editor\external\save_node
+ * @covers     \guidanceaddon_editor\external\create_link
+ * @covers     \guidanceaddon_editor\external\link_answer
  */
 
-namespace tool_guidance;
+namespace guidanceaddon_editor;
 
-use tool_guidance\external\create_link;
-use tool_guidance\external\delete_node;
-use tool_guidance\external\get_graph;
-use tool_guidance\external\link_answer;
-use tool_guidance\external\move_node;
-use tool_guidance\external\save_node;
+use tool_guidance\graph;
+use tool_guidance\node;
+use guidanceaddon_editor\external\create_link;
+use guidanceaddon_editor\external\delete_node;
+use guidanceaddon_editor\external\get_graph;
+use guidanceaddon_editor\external\link_answer;
+use guidanceaddon_editor\external\move_node;
+use guidanceaddon_editor\external\save_node;
 
 /**
  * External layer round-trip tests.

@@ -15,81 +15,81 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * External function definitions for the tool_guidance canvas editor.
+ * External function definitions for the guidance graph canvas editor.
  *
- * @package    tool_guidance
- * @copyright  2026 Lily Asshauer
+ * @package    guidanceaddon_editor
+ * @copyright  2026 Lily Asshauer, bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 $functions = [
-    'tool_guidance_get_graph' => [
-        'classname' => 'tool_guidance\external\get_graph',
+    'guidanceaddon_editor_get_graph' => [
+        'classname' => 'guidanceaddon_editor\external\get_graph',
         'description' => 'Load a guidance graph (nodes and links) for the editor.',
         'type' => 'read',
         'ajax' => true,
         'capabilities' => 'tool/guidance:manage',
     ],
-    'tool_guidance_save_node' => [
-        'classname' => 'tool_guidance\external\save_node',
+    'guidanceaddon_editor_save_node' => [
+        'classname' => 'guidanceaddon_editor\external\save_node',
         'description' => 'Create or update a node.',
         'type' => 'write',
         'ajax' => true,
         'capabilities' => 'tool/guidance:manage',
     ],
-    'tool_guidance_move_node' => [
-        'classname' => 'tool_guidance\external\move_node',
+    'guidanceaddon_editor_move_node' => [
+        'classname' => 'guidanceaddon_editor\external\move_node',
         'description' => 'Persist a node canvas position.',
         'type' => 'write',
         'ajax' => true,
         'capabilities' => 'tool/guidance:manage',
     ],
-    'tool_guidance_delete_node' => [
-        'classname' => 'tool_guidance\external\delete_node',
+    'guidanceaddon_editor_delete_node' => [
+        'classname' => 'guidanceaddon_editor\external\delete_node',
         'description' => 'Delete a node and its links.',
         'type' => 'write',
         'ajax' => true,
         'capabilities' => 'tool/guidance:manage',
     ],
-    'tool_guidance_create_link' => [
-        'classname' => 'tool_guidance\external\create_link',
+    'guidanceaddon_editor_create_link' => [
+        'classname' => 'guidanceaddon_editor\external\create_link',
         'description' => 'Create an answer link between two nodes.',
         'type' => 'write',
         'ajax' => true,
         'capabilities' => 'tool/guidance:manage',
     ],
-    'tool_guidance_update_link' => [
-        'classname' => 'tool_guidance\external\update_link',
+    'guidanceaddon_editor_update_link' => [
+        'classname' => 'guidanceaddon_editor\external\update_link',
         'description' => 'Rename an answer link.',
         'type' => 'write',
         'ajax' => true,
         'capabilities' => 'tool/guidance:manage',
     ],
-    'tool_guidance_delete_link' => [
-        'classname' => 'tool_guidance\external\delete_link',
+    'guidanceaddon_editor_delete_link' => [
+        'classname' => 'guidanceaddon_editor\external\delete_link',
         'description' => 'Delete an answer link.',
         'type' => 'write',
         'ajax' => true,
         'capabilities' => 'tool/guidance:manage',
     ],
-    'tool_guidance_link_answer' => [
-        'classname' => 'tool_guidance\external\link_answer',
+    'guidanceaddon_editor_link_answer' => [
+        'classname' => 'guidanceaddon_editor\external\link_answer',
         'description' => 'Point an answer at a child node or clear it.',
         'type' => 'write',
         'ajax' => true,
         'capabilities' => 'tool/guidance:manage',
     ],
-    'tool_guidance_move_answer' => [
-        'classname' => 'tool_guidance\external\move_answer',
+    'guidanceaddon_editor_move_answer' => [
+        'classname' => 'guidanceaddon_editor\external\move_answer',
         'description' => 'Persist an answer box canvas position.',
         'type' => 'write',
         'ajax' => true,
         'capabilities' => 'tool/guidance:manage',
     ],
-    'tool_guidance_set_root' => [
-        'classname' => 'tool_guidance\external\set_root',
+    'guidanceaddon_editor_set_root' => [
+        'classname' => 'guidanceaddon_editor\external\set_root',
         'description' => 'Set the entry node of a graph.',
         'type' => 'write',
         'ajax' => true,

@@ -15,17 +15,24 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Plugin version and metadata for tool_guidance (graph chooser + suggestion engine).
+ * Registers the guidance graph editor management page.
  *
- * @package    tool_guidance
+ * Included by tool_guidance\plugininfo\guidanceaddon::load_settings with the
+ * shared admin tree ($ADMIN) available; the parent registers the tool_guidance
+ * admin category before loading addon settings.
+ *
+ * @package    guidanceaddon_editor
  * @copyright  2026 Lily Asshauer, bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'tool_guidance';
-$plugin->version   = 2026070104;
-$plugin->requires  = 2025041400; // Moodle 5.0 or later (targeting 5.2).
-$plugin->maturity  = MATURITY_ALPHA;
-$plugin->release   = '0.2.0';
+if ($hassiteconfig) {
+    $ADMIN->add('tool_guidance', new admin_externalpage(
+        'tool_guidance_managegraphs',
+        get_string('managegraphs', 'tool_guidance'),
+        new moodle_url('/admin/tool/guidance/addon/editor/index.php'),
+        'tool/guidance:manage'
+    ));
+}

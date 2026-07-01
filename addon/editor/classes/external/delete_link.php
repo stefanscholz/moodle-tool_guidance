@@ -15,14 +15,14 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * External function: rename an answer link.
+ * External function: delete an answer link.
  *
  * @package    tool_guidance
  * @copyright  2026 Lily Asshauer
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace tool_guidance\external;
+namespace guidanceaddon_editor\external;
 
 use core_external\external_api;
 use core_external\external_function_parameters;
@@ -30,9 +30,9 @@ use core_external\external_value;
 use tool_guidance\link;
 
 /**
- * Updates the answer label on an existing link.
+ * Deletes a single answer link.
  */
-class update_link extends external_api {
+class delete_link extends external_api {
     /**
      * Parameters.
      *
@@ -41,29 +41,23 @@ class update_link extends external_api {
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
             'id' => new external_value(PARAM_INT, 'Link id'),
-            'answerlabel' => new external_value(PARAM_TEXT, 'Answer label'),
         ]);
     }
 
     /**
-     * Update the label.
+     * Delete the link.
      *
      * @param int $id
-     * @param string $answerlabel
      * @return bool
      */
-    public static function execute(int $id, string $answerlabel): bool {
-        $params = self::validate_parameters(
-            self::execute_parameters(),
-            ['id' => $id, 'answerlabel' => $answerlabel]
-        );
+    public static function execute(int $id): bool {
+        $params = self::validate_parameters(self::execute_parameters(), ['id' => $id]);
         $context = \context_system::instance();
         self::validate_context($context);
         require_capability('tool/guidance:manage', $context);
 
         $link = new link($params['id']);
-        $link->set('answerlabel', $params['answerlabel']);
-        $link->update();
+        $link->delete();
         return true;
     }
 

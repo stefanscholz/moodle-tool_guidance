@@ -85,6 +85,42 @@ abstract class base {
     }
 
     /**
+     * Menu label for the target-type selector.
+     *
+     * Core types resolve against tool_guidance; addon-provided targets should
+     * override this to read from their own component.
+     *
+     * @return string
+     */
+    public function get_menu_label(): string {
+        return get_string('target:' . $this->get_type(), 'tool_guidance');
+    }
+
+    /**
+     * Resolve the action URL for a teacher in a specific course/section.
+     *
+     * Context-independent targets (url, route) ignore the arguments; targets that
+     * create something in the course (activity, preset) override this.
+     *
+     * @param int $courseid
+     * @param int $sectionnum
+     * @return \moodle_url|null
+     */
+    public function get_action_url_for_course(int $courseid, int $sectionnum = 0): ?\moodle_url {
+        return $this->get_action_url();
+    }
+
+    /**
+     * Icon to show next to the action.
+     *
+     * @param \renderer_base $output
+     * @return \moodle_url
+     */
+    public function get_icon(\renderer_base $output): \moodle_url {
+        return $output->image_url('i/info', 'core');
+    }
+
+    /**
      * Read the decoded config back (e.g. to populate a form).
      *
      * @return array

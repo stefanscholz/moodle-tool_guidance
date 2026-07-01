@@ -67,3 +67,10 @@ $string['presetapplied'] = 'Activity created from the preset.';
 $string['presetnotfound'] = 'The requested preset could not be found or is disabled.';
 $string['backupfilemissing'] = 'The preset has no activity backup file.';
 $string['norestoredactivity'] = 'The backup did not contain an activity to restore.';
+
+// Leaf target type (used by the decision-graph editor and runtime chooser).
+$string['target:preset'] = 'Activity preset';
+$string['target:preset:action'] = 'Create this activity';
+$string['target:preset:preset'] = 'Preset';
+$string['error:presetrequired'] = 'Choose a preset for this outcome.';
+$string['error:presetunknown'] = 'The selected preset no longer exists or is disabled.';

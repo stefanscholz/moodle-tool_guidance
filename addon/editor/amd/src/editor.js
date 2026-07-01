@@ -139,7 +139,7 @@ export const init = (graphid) => {
 
     /** Reflect the current zoom level on the reset button, if present. */
     const updateZoomLabel = () => {
-        const label = root.parentNode.querySelector('[data-action="zoom-reset"]');
+        const label = root.querySelector('[data-action="zoom-reset"]');
         if (label) {
             label.textContent = Math.round(scale * 100) + '%';
         }
@@ -211,6 +211,163 @@ export const init = (graphid) => {
         applyPan();
         redraw();
         updateZoomLabel();
+    };
+
+    /**
+     * Arrange every node and answer box into a tidy top-to-bottom layered tree.
+     *
+     * Nodes are placed in layers by their breadth-first depth from the roots
+     * (deeper = further down); within a layer they are ordered by the average
+     * position of their parents to keep edges from crossing. Each answer box is
+     * dropped midway between its parent and child (or fanned out below the parent
+     * when it dangles). The graph is acyclic (the server forbids cycles), so the
+     * breadth-first walk always terminates.
+     *
+     * @param {Boolean} [persist] When true, save the new positions to the server.
+     */
+    const autoLayout = (persist) => {
+        if (!nodes.size) {
+            return;
+        }
+        const VGAP = 230;
+        const HGAP = 300;
+
+        // Count incoming edges so we can fall back to "no parents" as the roots.
+        const incoming = new Map();
+        nodes.forEach((nd) => incoming.set(nd.id, 0));
+        nodes.forEach((nd) => nd.links.forEach((l) => {
+            if (l.childnodeid && incoming.has(l.childnodeid)) {
+                incoming.set(l.childnodeid, incoming.get(l.childnodeid) + 1);
+            }
+        }));
+        let roots = [];
+        nodes.forEach((nd) => {
+            if (nd.isroot) {
+                roots.push(nd);
+            }
+        });
+        if (!roots.length) {
+            nodes.forEach((nd) => {
+                if (incoming.get(nd.id) === 0) {
+                    roots.push(nd);
+                }
+            });
+        }
+        if (!roots.length) {
+            roots = [nodes.values().next().value];
+        }
+
+        // Breadth-first depth from the roots.
+        const level = new Map();
+        const queue = [];
+        roots.forEach((r) => {
+            if (!level.has(r.id)) {
+                level.set(r.id, 0);
+                queue.push(r);
+            }
+        });
+        while (queue.length) {
+            const nd = queue.shift();
+            const d = level.get(nd.id);
+            nd.links.forEach((l) => {
+                const c = l.childnodeid ? nodes.get(l.childnodeid) : null;
+                if (c && !level.has(c.id)) {
+                    level.set(c.id, d + 1);
+                    queue.push(c);
+                }
+            });
+        }
+        // Anything unreachable from a root lands one layer below the deepest.
+        let maxlevel = 0;
+        level.forEach((d) => {
+            maxlevel = Math.max(maxlevel, d);
+        });
+        nodes.forEach((nd) => {
+            if (!level.has(nd.id)) {
+                level.set(nd.id, maxlevel + 1);
+            }
+        });
+
+        // Bucket nodes per layer.
+        const byLevel = new Map();
+        nodes.forEach((nd) => {
+            const d = level.get(nd.id);
+            if (!byLevel.has(d)) {
+                byLevel.set(d, []);
+            }
+            byLevel.get(d).push(nd);
+        });
+        const layers = [...byLevel.keys()].sort((a, b) => a - b);
+        let widest = 0;
+        byLevel.forEach((arr) => {
+            widest = Math.max(widest, arr.length);
+        });
+
+        // Order each layer by the mean order of its parents, then place it.
+        const order = new Map();
+        layers.forEach((d, li) => {
+            const arr = byLevel.get(d);
+            if (li > 0) {
+                const bary = new Map();
+                arr.forEach((nd) => {
+                    let sum = 0;
+                    let cnt = 0;
+                    nodes.forEach((p) => p.links.forEach((l) => {
+                        if (l.childnodeid === nd.id && order.has(p.id)) {
+                            sum += order.get(p.id);
+                            cnt++;
+                        }
+                    }));
+                    bary.set(nd.id, cnt ? sum / cnt : Number.MAX_SAFE_INTEGER);
+                });
+                arr.sort((a, b) => bary.get(a.id) - bary.get(b.id));
+            }
+            const offset = (widest - arr.length) / 2 * HGAP;
+            arr.forEach((nd, i) => {
+                order.set(nd.id, i);
+                nd.posx = 60 + offset + i * HGAP;
+                nd.posy = 60 + d * VGAP;
+                nd.el.style.left = nd.posx + 'px';
+                nd.el.style.top = nd.posy + 'px';
+            });
+        });
+
+        // Drop each answer box between its parent and child (or below, dangling).
+        nodes.forEach((nd) => {
+            const pcx = nd.posx + nd.el.offsetWidth / 2;
+            const pbottom = nd.posy + nd.el.offsetHeight;
+            nd.links.forEach((l, i) => {
+                const aw = l.el.offsetWidth || 190;
+                const ah = l.el.offsetHeight || 60;
+                const child = l.childnodeid ? nodes.get(l.childnodeid) : null;
+                if (child) {
+                    const ccx = child.posx + child.el.offsetWidth / 2;
+                    l.posx = (pcx + ccx) / 2 - aw / 2;
+                    l.posy = (pbottom + child.posy) / 2 - ah / 2;
+                } else {
+                    l.posx = pcx - aw / 2 + (i - (nd.links.length - 1) / 2) * (aw + 20);
+                    l.posy = pbottom + 40;
+                }
+                l.el.style.left = l.posx + 'px';
+                l.el.style.top = l.posy + 'px';
+            });
+        });
+
+        if (persist) {
+            nodes.forEach((nd) => {
+                if (nd.id) {
+                    call('move_node', {id: nd.id, posx: nd.posx, posy: nd.posy}).catch(Notification.exception);
+                }
+                nd.links.forEach((l) => {
+                    if (l.linkid) {
+                        call('move_answer', {id: l.linkid, posx: l.posx, posy: l.posy}).catch(Notification.exception);
+                    }
+                });
+            });
+        }
+
+        redraw();
+        fitView();
     };
 
     /**
@@ -677,7 +834,7 @@ export const init = (graphid) => {
      * @param {MouseEvent} e
      */
     const startPan = (e) => {
-        if (e.target.closest('.tg-create-popup')) {
+        if (e.target.closest('.tg-create-popup') || e.target.closest('.tool-guidance-toolbar')) {
             return;
         }
         closePopup();
@@ -975,6 +1132,13 @@ export const init = (graphid) => {
             }
         });
         redraw();
+        // Bundled starter templates (e.g. the activity chooser) carry only rough
+        // seed positions and no answer-box placement, so tidy them on view.
+        // Positions are not persisted here: the layout is deterministic, so an
+        // author who rearranges the graph by hand keeps their own arrangement.
+        if (data.autolayout) {
+            autoLayout(false);
+        }
     };
 
     /**
@@ -996,14 +1160,17 @@ export const init = (graphid) => {
     onAction('zoom-out', () => zoomCentre(1 / 1.2));
     onAction('zoom-reset', () => resetView());
     onAction('zoom-fit', () => fitView());
+    onAction('auto-layout', () => autoLayout(true));
     root.addEventListener('mousedown', startPan);
     document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup', onUp);
 
-    // Wheel zooms toward the cursor.
+    // Wheel zooms toward the cursor. A gentle step keeps trackpads (which fire
+    // many wheel events per gesture) from lurching between zoom levels.
+    const WHEELSTEP = 1.04;
     root.addEventListener('wheel', (e) => {
         e.preventDefault();
-        zoomAt(e.clientX, e.clientY, scale * (e.deltaY < 0 ? 1.1 : 1 / 1.1));
+        zoomAt(e.clientX, e.clientY, scale * (e.deltaY < 0 ? WHEELSTEP : 1 / WHEELSTEP));
     }, {passive: false});
 
     // Double-clicking empty canvas offers to create a question or recommendation

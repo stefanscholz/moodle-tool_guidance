@@ -86,6 +86,8 @@ $string['nodetargettype'] = 'Target type';
 // Canvas editor.
 $string['addquestion'] = 'Add question';
 $string['addleaf'] = 'Add recommendation';
+$string['autolayout'] = 'Auto layout';
+$string['autolayouttitle'] = 'Arrange all nodes top-to-bottom automatically';
 $string['answerlabeldefault'] = 'Answer';
 $string['createnodehere'] = 'Create here';
 $string['editorhint'] = 'Drag from a question\'s bottom dot to drop an answer: onto a node to link it, or onto empty space to leave it dangling. Drag an answer\'s dot to point it at a node (or empty space to create one). Drag the background to pan, scroll to zoom, and double-click empty space to add a node.';

@@ -16,6 +16,21 @@
     cursor: grabbing;
 }
 
+/* Controls float over the canvas, top-left, so authoring stays in one window. */
+.tool-guidance-toolbar {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 5;
+    gap: 4px;
+    padding: 4px 6px;
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+    cursor: default;
+}
+
 .tool-guidance-surface {
     position: absolute;
     top: 0;

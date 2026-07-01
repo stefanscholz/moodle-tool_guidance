@@ -108,8 +108,14 @@ class get_graph extends external_api {
 
         $entry = api::get_chooser_entry_node();
 
+        // Bundled starter templates (idnumber "starter-*") ship without a
+        // hand-authored layout; tell the editor to auto-arrange them on view.
+        $idnumber = (string) $graph->get('idnumber');
+        $autolayout = ($idnumber !== '' && strpos($idnumber, 'starter-') === 0);
+
         return [
             'chooserentrynodeid' => $entry ? (int) $entry->get('id') : 0,
+            'autolayout' => $autolayout,
             'nodes' => $nodes,
             'links' => $links,
             'targettypes' => $targettypes,
@@ -125,6 +131,7 @@ class get_graph extends external_api {
     public static function execute_returns(): external_single_structure {
         return new external_single_structure([
             'chooserentrynodeid' => new external_value(PARAM_INT, 'Site chooser entry node id, 0 if unset'),
+            'autolayout' => new external_value(PARAM_BOOL, 'Whether the editor should auto-arrange this graph on view'),
             'nodes' => new external_multiple_structure(new external_single_structure([
                 'id' => new external_value(PARAM_INT, 'Node id'),
                 'type' => new external_value(PARAM_ALPHA, 'question or leaf'),

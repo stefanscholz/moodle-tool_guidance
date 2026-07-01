@@ -106,6 +106,14 @@ class get_graph extends external_api {
             $activitymods[] = ['value' => $value, 'label' => $label];
         }
 
+        // Presets (by short name) offered by the optional guidanceaddon_preset addon.
+        $presets = [];
+        if (class_exists(\guidanceaddon_preset\local\preset_manager::class)) {
+            foreach (\guidanceaddon_preset\local\preset_manager::get_enabled() as $preset) {
+                $presets[] = ['value' => $preset->shortname, 'label' => format_string($preset->title)];
+            }
+        }
+
         $entry = api::get_chooser_entry_node();
 
         // Bundled starter templates (idnumber "starter-*") ship without a
@@ -120,6 +128,7 @@ class get_graph extends external_api {
             'links' => $links,
             'targettypes' => $targettypes,
             'activitymods' => $activitymods,
+            'presets' => $presets,
         ];
     }
 
@@ -159,6 +168,10 @@ class get_graph extends external_api {
                 'value' => new external_value(PARAM_PLUGIN, 'Module name'),
                 'label' => new external_value(PARAM_TEXT, 'Module display name'),
             ])),
+            'presets' => new external_multiple_structure(new external_single_structure([
+                'value' => new external_value(PARAM_ALPHANUMEXT, 'Preset short name'),
+                'label' => new external_value(PARAM_TEXT, 'Preset title'),
+            ]), 'Available activity presets', VALUE_DEFAULT, []),
         ]);
     }
 }

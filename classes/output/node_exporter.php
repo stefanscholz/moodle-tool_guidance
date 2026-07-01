@@ -74,6 +74,7 @@ class node_exporter extends exporter {
             'isquestion' => ['type' => PARAM_BOOL],
             'isresult' => ['type' => PARAM_BOOL],
             'prompt' => ['type' => PARAM_TEXT],
+            'description' => ['type' => PARAM_RAW],
             'answers' => [
                 'multiple' => true,
                 'type' => [
@@ -263,6 +264,11 @@ class node_exporter extends exporter {
             'isquestion' => $this->node->is_question(),
             'isresult' => $this->node->is_leaf(),
             'prompt' => $this->node->get('title'),
+            'description' => format_text(
+                (string) $this->node->get('description'),
+                $this->node->get('descriptionformat') ?? FORMAT_HTML,
+                ['context' => $this->related['context']]
+            ),
             'answers' => $this->node->is_question() ? $this->export_answers() : [],
             'presets' => $this->node->is_leaf() ? $this->export_presets($output) : [],
         ];

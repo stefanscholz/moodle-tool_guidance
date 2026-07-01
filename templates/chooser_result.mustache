@@ -46,6 +46,9 @@
 }}
 <div class="tool-guidance-result">
     <h3 class="tool-guidance-prompt">{{prompt}}</h3>
+    {{#description}}
+        <div class="tool-guidance-node-description text-muted mb-3">{{{description}}}</div>
+    {{/description}}
     <p class="tool-guidance-presets-label text-muted">{{#str}}suggestedpresets, tool_guidance{{/str}}</p>
     <div class="tool-guidance-presets">
         {{#presets}}

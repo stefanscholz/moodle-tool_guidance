@@ -57,6 +57,7 @@ const STRINGKEYS = [
     ['confirmdeletenode', 'confirmdeletenodejs'],
     ['createhere', 'createnodehere'],
     ['modname', 'target:activity:modname'],
+    ['preset', 'target:preset:shortname'],
     ['path', 'target:route:path'],
     ['url', 'target:url:url'],
     ['newwindow', 'target:url:newwindow'],
@@ -80,6 +81,7 @@ export const init = (graphid) => {
     let s = {};
     let targettypes = [];
     let activitymods = [];
+    let presets = [];
     const root = document.querySelector('[data-region="editor"]');
     const surface = root.querySelector('[data-region="surface"]');
     const edges = root.querySelector('[data-region="edges"]');
@@ -166,7 +168,11 @@ export const init = (graphid) => {
         updateZoomLabel();
     };
 
-    /** Zoom in/out around the centre of the editor viewport. */
+    /**
+     * Zoom in/out around the centre of the editor viewport.
+     *
+     * @param {Number} factor Multiplier applied to the current scale.
+     */
     const zoomCentre = (factor) => {
         const er = root.getBoundingClientRect();
         zoomAt(er.left + er.width / 2, er.top + er.height / 2, scale * factor);
@@ -536,6 +542,26 @@ export const init = (graphid) => {
                 nd.targetconfig = {modname: activitymods[0].value};
             }
             field(s.modname, sel);
+        } else if (nd.targettype === 'preset') {
+            const sel = document.createElement('select');
+            sel.className = 'form-select form-select-sm';
+            presets.forEach((p) => {
+                const o = document.createElement('option');
+                o.value = p.value;
+                o.textContent = p.label;
+                if (p.value === cfg.shortname) {
+                    o.selected = true;
+                }
+                sel.appendChild(o);
+            });
+            sel.addEventListener('change', () => {
+                nd.targetconfig = {shortname: sel.value};
+                queueSave(nd);
+            });
+            if (!cfg.shortname && presets.length) {
+                nd.targetconfig = {shortname: presets[0].value};
+            }
+            field(s.preset, sel);
         } else if (nd.targettype === 'route') {
             const inp = document.createElement('input');
             inp.type = 'text';
@@ -1147,6 +1173,7 @@ export const init = (graphid) => {
     const load = (data) => {
         targettypes = data.targettypes;
         activitymods = data.activitymods;
+        presets = data.presets || [];
         data.nodes.forEach((n) => {
             const nd = {
                 id: n.id, type: n.type, title: n.title, description: n.description,

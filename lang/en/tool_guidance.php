@@ -354,3 +354,8 @@ $string['adminlink_enrolusers'] = 'Enrolled users';
 $string['adminlink_groups'] = 'Groups';
 $string['adminlink_grades'] = 'Gradebook setup';
 $string['adminlink_completion'] = 'Course completion';
+
+// Reset rules to defaults.
+$string['resetrules'] = 'Reset rules to defaults';
+$string['confirmreset'] = 'This deletes all current rules (and their dismissals) and reloads the default rules from the shipped file. Any customisations to the rules will be lost. Continue?';
+$string['rulesreset'] = 'Reset to defaults: {$a} rules reloaded.';

@@ -168,4 +168,48 @@ class rule_repository {
         global $DB;
         return $DB->count_records(self::TABLE);
     }
+
+    /**
+     * Delete all rules (and their dismissals) and re-seed from the shipped CSV.
+     *
+     * @return int the number of rules seeded
+     */
+    public function reset_to_defaults(): int {
+        global $DB, $CFG;
+
+        $DB->delete_records('tool_guidance_dismissed');
+        $DB->delete_records(self::TABLE);
+
+        $count = 0;
+        $path = $CFG->dirroot . '/admin/tool/guidance/db/seed_rules.csv';
+        if (is_readable($path) && ($handle = fopen($path, 'r')) !== false) {
+            fgetcsv($handle); // Skip the header row.
+            $now = time();
+            while (($row = fgetcsv($handle)) !== false) {
+                if (count($row) < 8) {
+                    continue;
+                }
+                [$sortorder, $enabled, $signaltype, $name, $condition, $suggest, $rationale, $preconfig] = $row;
+                $DB->insert_record(self::TABLE, (object) [
+                    'sortorder' => (int) $sortorder,
+                    'enabled' => (int) $enabled,
+                    'signaltype' => trim($signaltype),
+                    'name' => trim($name),
+                    'conditiontext' => trim($condition),
+                    'suggestmod' => trim($suggest),
+                    'rationale' => trim($rationale),
+                    'preconfig' => trim($preconfig),
+                    'targettype' => !empty($row[8]) ? trim($row[8]) : 'activity',
+                    'targetvalue' => isset($row[9]) ? trim($row[9]) : '',
+                    'timecreated' => $now,
+                    'timemodified' => $now,
+                ]);
+                $count++;
+            }
+            fclose($handle);
+        }
+
+        engine::purge_all();
+        return $count;
+    }
 }

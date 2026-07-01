@@ -18,7 +18,7 @@
  * Privacy provider for tool_guidance.
  *
  * @package    tool_guidance
- * @copyright  2026 Lily Asshauer
+ * @copyright  2026 Lily Asshauer, bdecent gmbh <https://bdecent.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

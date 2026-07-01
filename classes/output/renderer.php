@@ -14,18 +14,28 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Plugin version and metadata for tool_guidance.
- *
- * @package    tool_guidance
- * @copyright  2026 Lily Asshauer, bdecent gmbh <https://bdecent.de>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
+namespace tool_guidance\output;
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'tool_guidance';
-$plugin->version   = 2026070100;
-$plugin->requires  = 2025041400; // Moodle 5.0 or later (targeting 5.2).
-$plugin->maturity  = MATURITY_ALPHA;
-$plugin->release   = '0.1.0';
+use plugin_renderer_base;
+
+/**
+ * Renderer for the Guidance tool.
+ *
+ * @package    tool_guidance
+ * @copyright  2026 bdecent gmbh <https://bdecent.de>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class renderer extends plugin_renderer_base {
+
+    /**
+     * Render the chooser page.
+     *
+     * @param chooser_page $page
+     * @return string HTML.
+     */
+    public function render_chooser_page(chooser_page $page): string {
+        return $this->render_from_template('tool_guidance/chooser_page', $page->export_for_template($this));
+    }
+}

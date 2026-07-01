@@ -1,0 +1,76 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template tool_guidance/chooser_result
+
+    A decision-tree result node, listing suggested activity presets.
+
+    Context variables required for this template:
+    * prompt - The result heading.
+    * presets - List of {modname, iconurl, title, description, useurl, config:[{name, value}]}.
+
+    Example context (json):
+    {
+        "prompt": "A quiz is a good fit",
+        "presets": [
+            {
+                "modname": "quiz",
+                "iconurl": "https://example.com/quiz.svg",
+                "title": "Diagnostic quiz",
+                "description": "A short, auto-graded quiz.",
+                "useurl": "https://example.com/course/view.php?id=2",
+                "config": [{"name": "Number of questions", "value": "5"}]
+            }
+        ]
+    }
+}}
+<div class="tool-guidance-result">
+    <h3 class="tool-guidance-prompt">{{prompt}}</h3>
+    <p class="tool-guidance-presets-label text-muted">{{#str}}suggestedpresets, tool_guidance{{/str}}</p>
+    <div class="tool-guidance-presets">
+        {{#presets}}
+            <div class="card tool-guidance-preset">
+                <div class="card-body">
+                    <div class="tool-guidance-preset-head">
+                        <img src="{{iconurl}}" alt="" aria-hidden="true" class="tool-guidance-preset-icon">
+                        <h4 class="tool-guidance-preset-title">{{title}}</h4>
+                    </div>
+                    <p class="tool-guidance-preset-desc">{{description}}</p>
+                    {{#config.0}}
+                        <details class="tool-guidance-preset-configdetails">
+                            <summary>{{#str}}showconfig, tool_guidance{{/str}}</summary>
+                            <dl class="tool-guidance-preset-config">
+                                {{#config}}
+                                    <div class="tool-guidance-config-row">
+                                        <dt>{{name}}</dt>
+                                        <dd>{{value}}</dd>
+                                    </div>
+                                {{/config}}
+                            </dl>
+                        </details>
+                    {{/config.0}}
+                    <a href="{{useurl}}" class="btn btn-primary tool-guidance-usepreset" data-action="usepreset">
+                        {{#str}}usepreset, tool_guidance{{/str}}
+                    </a>
+                    <p class="tool-guidance-preset-note text-muted">
+                        {{#str}}usepresetnote, tool_guidance{{/str}}
+                    </p>
+                </div>
+            </div>
+        {{/presets}}
+    </div>
+</div>

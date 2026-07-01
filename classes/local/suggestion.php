@@ -37,6 +37,8 @@ class suggestion {
      * @param string $rationale teacher-facing reason
      * @param string $signal gap|lifecycle|engagement
      * @param string $preconfig opaque preconfig payload for the add-activity flow
+     * @param string $targettype where the CTA links: activity|node|adminlink
+     * @param string $targetvalue node id (node), admin-link key (adminlink), else empty
      */
     public function __construct(
         public int $ruleid,
@@ -45,6 +47,8 @@ class suggestion {
         public string $rationale,
         public string $signal,
         public string $preconfig,
+        public string $targettype = 'activity',
+        public string $targetvalue = '',
     ) {
     }
 
@@ -62,6 +66,8 @@ class suggestion {
             $rule->rationale,
             $rule->signal,
             $rule->preconfig,
+            $rule->targettype,
+            $rule->targetvalue,
         );
     }
 
@@ -94,6 +100,8 @@ class suggestion {
             'rationale' => $this->rationale,
             'signal'    => $this->signal,
             'preconfig' => $this->preconfig,
+            'targettype' => $this->targettype,
+            'targetvalue' => $this->targetvalue,
         ];
     }
 
@@ -111,6 +119,8 @@ class suggestion {
             (string) $data['rationale'],
             (string) $data['signal'],
             (string) $data['preconfig'],
+            (string) ($data['targettype'] ?? 'activity'),
+            (string) ($data['targetvalue'] ?? ''),
         );
     }
 }

@@ -16,6 +16,7 @@
 
 namespace tool_guidance\form;
 
+use tool_guidance\local\admin_links;
 use tool_guidance\local\condition\evaluator;
 use tool_guidance\local\condition\parser;
 use tool_guidance\local\profile\fact_catalogue;
@@ -59,6 +60,25 @@ class rule_form extends \moodleform {
         $mform->addElement('select', 'suggestmod', get_string('rule_suggest', 'tool_guidance'),
             self::module_options());
         $mform->addHelpButton('suggestmod', 'rule_suggest', 'tool_guidance');
+
+        // Where the "Set this up" call-to-action links. Defaults to the activity above;
+        // can instead open the guidance graph at a chosen node, or a course admin page.
+        $mform->addElement('select', 'targettype', get_string('rule_target', 'tool_guidance'), [
+            'activity'  => get_string('target_activity', 'tool_guidance'),
+            'node'      => get_string('target_node', 'tool_guidance'),
+            'adminlink' => get_string('target_adminlink', 'tool_guidance'),
+        ]);
+        $mform->setDefault('targettype', 'activity');
+        $mform->addHelpButton('targettype', 'rule_target', 'tool_guidance');
+
+        $nodeoptions = self::node_options();
+        $mform->addElement('select', 'targetnode', get_string('rule_targetnode', 'tool_guidance'),
+            $nodeoptions ?: ['' => get_string('nonodes', 'tool_guidance')]);
+        $mform->hideIf('targetnode', 'targettype', 'neq', 'node');
+
+        $mform->addElement('select', 'targetadmin', get_string('rule_targetadmin', 'tool_guidance'),
+            admin_links::menu());
+        $mform->hideIf('targetadmin', 'targettype', 'neq', 'adminlink');
 
         global $PAGE, $OUTPUT;
         $uniqid = \html_writer::random_id('tool_guidance_cond_');
@@ -142,7 +162,35 @@ class rule_form extends \moodleform {
             $errors['suggestmod'] = get_string('error');
         }
 
+        $targettype = $data['targettype'] ?? 'activity';
+        if ($targettype === 'node') {
+            if (empty($data['targetnode']) || !array_key_exists($data['targetnode'], self::node_options())) {
+                $errors['targetnode'] = get_string('target_invalidnode', 'tool_guidance');
+            }
+        } else if ($targettype === 'adminlink' && !admin_links::exists($data['targetadmin'] ?? '')) {
+            $errors['targetadmin'] = get_string('error');
+        }
+
         return $errors;
+    }
+
+    /**
+     * Nodes from the enabled graph as id => "title (question|leaf)".
+     *
+     * @return array<int, string>
+     */
+    private static function node_options(): array {
+        $options = [];
+        $graph = \tool_guidance\graph::get_record(['enabled' => 1]);
+        if ($graph) {
+            foreach ($graph->get_nodes() as $node) {
+                $type = $node->is_leaf()
+                    ? get_string('node_leaf', 'tool_guidance')
+                    : get_string('node_question', 'tool_guidance');
+                $options[$node->get('id')] = format_string($node->get('title')) . " ($type)";
+            }
+        }
+        return $options;
     }
 
     /**

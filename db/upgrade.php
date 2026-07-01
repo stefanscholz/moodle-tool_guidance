@@ -135,5 +135,24 @@ function xmldb_tool_guidance_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026070103, 'tool', 'guidance');
     }
 
+    if ($oldversion < 2026070105) {
+        // Add the configurable CTA target to the rule table.
+        $table = new xmldb_table('tool_guidance_rule');
+
+        $targettype = new xmldb_field('targettype', XMLDB_TYPE_CHAR, '20', null,
+            XMLDB_NOTNULL, null, 'activity', 'preconfig');
+        if (!$dbman->field_exists($table, $targettype)) {
+            $dbman->add_field($table, $targettype);
+        }
+
+        $targetvalue = new xmldb_field('targetvalue', XMLDB_TYPE_CHAR, '255', null,
+            null, null, null, 'targettype');
+        if (!$dbman->field_exists($table, $targetvalue)) {
+            $dbman->add_field($table, $targetvalue);
+        }
+
+        upgrade_plugin_savepoint(true, 2026070105, 'tool', 'guidance');
+    }
+
     return true;
 }

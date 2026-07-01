@@ -32,9 +32,11 @@ class rule {
      * @param string $signal gap|lifecycle|engagement
      * @param string $name
      * @param string $conditiontext condition DSL
-     * @param string $suggestmod suggested activity module name
+     * @param string $suggestmod suggested activity module name (the anchor + fallback)
      * @param string $rationale teacher-facing reason
      * @param string $preconfig opaque preconfig payload
+     * @param string $targettype where the CTA links: activity|node|adminlink
+     * @param string $targetvalue node id (node), admin-link key (adminlink), else empty
      */
     public function __construct(
         public int $id,
@@ -46,6 +48,8 @@ class rule {
         public string $suggestmod,
         public string $rationale,
         public string $preconfig,
+        public string $targettype = 'activity',
+        public string $targetvalue = '',
     ) {
     }
 
@@ -66,6 +70,8 @@ class rule {
             (string) $record->suggestmod,
             (string) $record->rationale,
             (string) ($record->preconfig ?? ''),
+            (string) ($record->targettype ?? 'activity'),
+            (string) ($record->targetvalue ?? ''),
         );
     }
 
@@ -87,6 +93,8 @@ class rule {
         $record->suggestmod = $this->suggestmod;
         $record->rationale = $this->rationale;
         $record->preconfig = $this->preconfig;
+        $record->targettype = $this->targettype;
+        $record->targetvalue = $this->targetvalue;
         return $record;
     }
 }

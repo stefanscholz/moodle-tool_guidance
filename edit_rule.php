@@ -51,6 +51,9 @@ if ($existing) {
         'name'          => $existing->name,
         'signal'        => $existing->signal,
         'suggestmod'    => $existing->suggestmod,
+        'targettype'    => $existing->targettype,
+        'targetnode'    => $existing->targettype === 'node' ? $existing->targetvalue : '',
+        'targetadmin'   => $existing->targettype === 'adminlink' ? $existing->targetvalue : '',
         'conditionclauses' => json_encode(parser::parse($existing->conditiontext)),
         'rationale'     => $existing->rationale,
         'preconfig'     => $existing->preconfig,
@@ -67,6 +70,12 @@ if ($form->is_cancelled()) {
         $sortorder = $repository->next_sortorder();
     }
     $conditiontext = rule_form::compile_clauses($data->conditionclauses ?? '[]');
+    $targettype = $data->targettype ?? 'activity';
+    $targetvalue = match ($targettype) {
+        'node' => (string) ($data->targetnode ?? ''),
+        'adminlink' => (string) ($data->targetadmin ?? ''),
+        default => '',
+    };
     $rule = new rule(
         (int) $data->id,
         (int) $sortorder,
@@ -77,6 +86,8 @@ if ($form->is_cancelled()) {
         $data->suggestmod,
         $data->rationale,
         $data->preconfig ?? '',
+        $targettype,
+        $targetvalue,
     );
     $repository->save($rule);
     redirect($manageurl, get_string('rulesaved', 'tool_guidance'));

@@ -316,3 +316,21 @@ $string['op_lte'] = 'is at most';
 $string['op_gt'] = 'is more than';
 $string['op_gte'] = 'is at least';
 $string['op_in'] = 'is one of';
+
+// Rule call-to-action target.
+$string['rule_target'] = 'Link target';
+$string['rule_target_help'] = 'Where the "Set this up" button in the block sends the teacher. **Suggested activity** opens the setup form for the activity above. **Graph node** opens the guidance chooser at a chosen point in the decision tree, so the tree can take over and guide the teacher deeper into the choices. **Course admin page** jumps straight to a course administration page. If a chosen graph node is later removed or its graph disabled, the block automatically falls back to the suggested activity.';
+$string['target_activity'] = 'Suggested activity (open its setup)';
+$string['target_node'] = 'Graph node (open the guidance chooser here)';
+$string['target_adminlink'] = 'Course admin page';
+$string['rule_targetnode'] = 'Graph node';
+$string['rule_targetadmin'] = 'Course admin page';
+$string['node_question'] = 'question';
+$string['node_leaf'] = 'leaf';
+$string['target_invalidnode'] = 'Choose a graph node, or change the link target.';
+$string['adminlink_settings'] = 'Course settings';
+$string['adminlink_enrolmethods'] = 'Enrolment methods';
+$string['adminlink_enrolusers'] = 'Enrolled users';
+$string['adminlink_groups'] = 'Groups';
+$string['adminlink_grades'] = 'Gradebook setup';
+$string['adminlink_completion'] = 'Course completion';

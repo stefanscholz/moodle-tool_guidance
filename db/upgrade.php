@@ -81,5 +81,18 @@ function xmldb_tool_guidance_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026063003, 'tool', 'guidance');
     }
 
+    if ($oldversion < 2026070102) {
+        // The graph model shared a version number with the presets work, so on
+        // sites installed at 2026070100/01 the graph tables were never created.
+        // Create any that are missing straight from install.xml.
+        $xmlfile = __DIR__ . '/install.xml';
+        foreach (['tool_guidance_graph', 'tool_guidance_node', 'tool_guidance_link'] as $tablename) {
+            if (!$dbman->table_exists(new xmldb_table($tablename))) {
+                $dbman->install_one_table_from_xmldb_file($xmlfile, $tablename);
+            }
+        }
+        upgrade_plugin_savepoint(true, 2026070102, 'tool', 'guidance');
+    }
+
     return true;
 }
